@@ -1,3 +1,4 @@
+.swiftpm
 .DS_Store
 Makefile
 CMakeCache.txt
@@ -13,4 +14,3 @@ log.txt
 *.exe
 *.dll
 *.pyc
-
