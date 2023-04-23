@@ -2588,70 +2588,6 @@ void reset_model() {
     g->time_changed = 1;
 }
 
-<<<<<<< Updated upstream:src/main.c
-=======
-void compass(Attrib *text_attrib, int zero, float tx, float ty, float ts, float xAxis){
-    char compass_buffer[1024];                                                                 // compass buffer array
-    int j = 0;
-    if(xAxis > 0 && xAxis < 0.785){
-        for(int i = 0; i < 5; i++){
-            snprintf(compass_buffer, 40, "%s", compassNav[i]);                                 // updates compass buffer with the compass array
-            render_text(text_attrib, ALIGN_LEFT, tx, ty- ((4+j) * ts), ts, compass_buffer);    // renders compass in screen by rows 
-            j+=2;                                                                              // j is going to be 0,2,4,6,8 accordingly for proper position
-        }
-        j = 0;
-    } else if(xAxis>0.785 && xAxis<1.57){
-        for(int i = 5; i < 10; i++){
-            snprintf(compass_buffer, 40, "%s", compassNav[i]);
-            render_text(text_attrib, ALIGN_LEFT, tx, ty- ((4+j) * ts), ts, compass_buffer); 
-            j+=2;
-        }
-        j = 0;
-    } else if(xAxis>1.57 && xAxis<2.355){
-        for(int i = 10; i < 15; i++){
-            snprintf(compass_buffer, 40, "%s", compassNav[i]);
-            render_text(text_attrib, ALIGN_LEFT, tx, ty- ((4+j) * ts), ts, compass_buffer); 
-            j+=2;
-        }
-        j = 0;
-    }else if(xAxis>2.355 && xAxis<3.14){
-        for(int i = 15; i < 20; i++){
-            snprintf(compass_buffer, 40, "%s", compassNav[i]);
-            render_text(text_attrib, ALIGN_LEFT, tx, ty- ((4+j) * ts), ts, compass_buffer); 
-            j+=2;
-        }
-        j = 0;
-    }else if(xAxis>3.14 && xAxis<3.925){
-        for(int i = 20; i < 25; i++){
-            snprintf(compass_buffer, 40, "%s", compassNav[i]);
-            render_text(text_attrib, ALIGN_LEFT, tx, ty- ((4+j) * ts), ts, compass_buffer); 
-            j+=2;
-        }
-        j = 0;
-    }else if(xAxis>3.925 && xAxis<4.71){
-        for(int i = 25; i < 30; i++){
-            snprintf(compass_buffer, 40, "%s", compassNav[i]);
-            render_text(text_attrib, ALIGN_LEFT, tx, ty- ((4+j) * ts), ts, compass_buffer); 
-            j+=2;
-        }
-        j = 0;
-    }else if(xAxis>4.71 && xAxis<5.495){
-        for(int i = 30; i < 35; i++){
-            snprintf(compass_buffer, 40, "%s", compassNav[i]);
-            render_text(text_attrib, ALIGN_LEFT, tx, ty- ((4+j) * ts), ts, compass_buffer); 
-            j+=2;
-        }
-        j = 0;
-    }else if(xAxis>5.495 && xAxis<6.28){
-        for(int i = 35; i < 40; i++){
-            snprintf(compass_buffer, 40, "%s", compassNav[i]);
-            render_text(text_attrib, ALIGN_LEFT, tx, ty- ((4+j) * ts), ts, compass_buffer); 
-            j+=2;
-        }
-        j = 0;
-    }
-}
-
 void chdir_resources() {
 #if defined(__APPLE__)
 	// macOS workaround for setting the working directory to the location of the .app
@@ -2668,7 +2604,6 @@ void chdir_resources() {
 #endif
 }
 
->>>>>>> Stashed changes:Sources/CVoxelworld/main.c
 int main(int argc, char **argv) {
 	chdir_resources();
 
