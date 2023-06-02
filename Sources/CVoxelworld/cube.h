@@ -1,5 +1,4 @@
-#ifndef _cube_h_
-#define _cube_h_
+#pragma once
 
 void make_cube_faces(
     float *data, float ao[6][4], float light[6][4],
@@ -31,5 +30,3 @@ void make_character_3d(
     float *data, float x, float y, float z, float n, int face, char c);
 
 void make_sphere(float *data, float r, int detail);
-
-#endif

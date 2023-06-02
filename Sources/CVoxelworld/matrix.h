@@ -1,5 +1,4 @@
-#ifndef _matrix_h_
-#define _matrix_h_
+#pragma once
 
 #include <cglm/cglm.h>
 
@@ -12,5 +11,3 @@ void set_matrix_2d(mat4 matrix, int width, int height);
 void set_matrix_3d(mat4 matrix, int width, int height, float x, float y, float z, float rx, float ry, float fov, int ortho, int radius);
 
 void set_matrix_item(mat4 matrix, int width, int height, int scale);
-
-#endif

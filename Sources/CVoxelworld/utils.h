@@ -1,5 +1,4 @@
-#ifndef _util_h_
-#define _util_h_
+#pragma once
 
 #include <GLFW/glfw3.h>
 #include "config.h"
@@ -41,5 +40,3 @@ char *tokenize(char *str, const char *delim, char **key);
 int char_width(char input);
 int string_width(const char *input);
 int wrap(const char *input, int max_width, char *output, int max_length);
-
-#endif

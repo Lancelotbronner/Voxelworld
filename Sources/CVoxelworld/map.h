@@ -1,5 +1,4 @@
-#ifndef _map_h_
-#define _map_h_
+#pragma once
 
 #define EMPTY_ENTRY(entry) ((entry)->value == 0)
 
@@ -41,5 +40,3 @@ void map_copy(Map *dst, Map *src);
 void map_grow(Map *map);
 int map_set(Map *map, int x, int y, int z, int w);
 int map_get(Map *map, int x, int y, int z);
-
-#endif

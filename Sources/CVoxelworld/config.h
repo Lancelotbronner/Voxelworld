@@ -1,5 +1,4 @@
-#ifndef _config_h_
-#define _config_h_
+#pragma once
 
 // app parameters
 #define FULLSCREEN 0
@@ -49,5 +48,3 @@
 #define DELETE_CHUNK_RADIUS 14
 #define CHUNK_SIZE 32
 #define COMMIT_INTERVAL 5
-
-#endif

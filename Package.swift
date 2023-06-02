@@ -46,5 +46,5 @@ var package = Package(
 		.target(name: "tinycthread", path: "Dependencies/tinycthread"),
 		.target(name: "lodepng", path: "Dependencies/lodepng"),
 	],
-	cLanguageStandard: .c17
+	cLanguageStandard: .c2x
 )
