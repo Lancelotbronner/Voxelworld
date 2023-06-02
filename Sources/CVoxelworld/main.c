@@ -15,7 +15,7 @@
 #include "item.h"
 #include "map.h"
 #include "matrix.h"
-#include "noise.h"
+#include <noise.h>
 #include "sign.h"
 #include <tinycthread.h>
 #include "utils.h"
