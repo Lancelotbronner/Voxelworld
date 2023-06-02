@@ -3,6 +3,9 @@ import PackageDescription
 
 var package = Package(
 	name: "Voxelworld",
+	platforms: [
+		.macOS(.v10_15),
+	],
 	targets: [
 
 //		.executableTarget(
