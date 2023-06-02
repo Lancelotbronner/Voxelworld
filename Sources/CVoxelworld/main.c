@@ -289,7 +289,7 @@ GLuint gen_player_buffer(float x, float y, float z, float rx, float ry) {
 }
 
 GLuint gen_text_buffer(float x, float y, float n, char *text) {
-    int length = strlen(text);
+    int length = (int)strlen(text);
     GLfloat *data = malloc_faces(4, length);
     for (int i = 0; i < length; i++) {
         make_character(data + i * 24, x, y, n / 2, n, text[i]);
@@ -787,7 +787,7 @@ int _gen_sign_buffer(
     char *key;
     char *line = tokenize(lines, "\n", &key);
     while (line) {
-        int length = strlen(line);
+        size_t length = strlen(line);
         int line_width = string_width(line);
         line_width = MIN(line_width, max_width);
         float rx = sx - dx * line_width / max_width / 2;
@@ -1697,7 +1697,7 @@ void render_sign(Attrib *attrib, Player *player) {
     char text[MAX_SIGN_LENGTH];
     strncpy(text, g->typing_buffer + 1, MAX_SIGN_LENGTH);
     text[MAX_SIGN_LENGTH - 1] = '\0';
-    GLfloat *data = malloc_faces(5, strlen(text));
+    GLfloat *data = malloc_faces(5, (int)strlen(text));
     int length = _gen_sign_buffer(data, x, y, z, face, text);
     GLuint buffer = gen_faces(5, length, data);
     draw_sign(attrib, buffer, length);
@@ -1799,10 +1799,10 @@ void render_text(
     glUniformMatrix4fv(attrib->matrix, 1, GL_FALSE, matrix);
     glUniform1i(attrib->sampler, 1);
     glUniform1i(attrib->extra1, 0);
-    int length = strlen(text);
+    size_t length = strlen(text);
     x -= n * justify * (length - 1) / 2;
     GLuint buffer = gen_text_buffer(x, y, n, text);
-    draw_text(attrib, buffer, length);
+    draw_text(attrib, buffer, (int)length);
     del_buffer(buffer);
 }
 
@@ -2024,8 +2024,8 @@ void tree(Block *block) {
 }
 
 void parse_command(const char *buffer, int forward) {
-    char username[128] = {0};
-    char token[128] = {0};
+    char username[129] = {0};
+    char token[129] = {0};
     char server_addr[MAX_ADDR_LENGTH];
     int server_port = DEFAULT_PORT;
     char filename[MAX_PATH_LENGTH];
@@ -2188,19 +2188,17 @@ void on_key(GLFWwindow *window, int key, int scancode, int action, int mods) {
     }
     if (key == GLFW_KEY_BACKSPACE) {
         if (g->typing) {
-            int n = strlen(g->typing_buffer);
-            if (n > 0) {
+            size_t n = strlen(g->typing_buffer);
+            if (n > 0)
                 g->typing_buffer[n - 1] = '\0';
-            }
         }
     }
     if (action != GLFW_PRESS) {
         return;
     }
     if (key == GLFW_KEY_ESCAPE) {
-        if (g->typing) {
+        if (g->typing)
             g->typing = 0;
-        }
         else if (exclusive) {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         }
@@ -2208,7 +2206,7 @@ void on_key(GLFWwindow *window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_ENTER) {
         if (g->typing) {
             if (mods & GLFW_MOD_SHIFT) {
-                int n = strlen(g->typing_buffer);
+                size_t n = strlen(g->typing_buffer);
                 if (n < MAX_TEXT_LENGTH - 1) {
                     g->typing_buffer[n] = '\r';
                     g->typing_buffer[n + 1] = '\0';
@@ -2287,7 +2285,7 @@ void on_char(GLFWwindow *window, unsigned int u) {
     if (g->typing) {
         if (u >= 32 && u < 128) {
             char c = (char)u;
-            int n = strlen(g->typing_buffer);
+            size_t n = strlen(g->typing_buffer);
             if (n < MAX_TEXT_LENGTH - 1) {
                 g->typing_buffer[n] = c;
                 g->typing_buffer[n + 1] = '\0';
@@ -2609,7 +2607,7 @@ int main(int argc, char **argv) {
 
     // INITIALIZATION //
     curl_global_init(CURL_GLOBAL_DEFAULT);
-    srand(time(NULL));
+    srand((unsigned int)time(NULL));
     rand();
 
     // WINDOW INITIALIZATION //
