@@ -116,7 +116,7 @@ int db_init(char *path) {
         "insert or replace into key (p, q, key) "
         "values (?, ?, ?);";
     int rc;
-    rc = sqlite3_open(path, &db);
+    rc = sqlite3_open_v2(path, &db, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, NULL);
     if (rc) return rc;
     rc = sqlite3_exec(db, create_query, NULL, NULL, NULL);
     if (rc) return rc;
