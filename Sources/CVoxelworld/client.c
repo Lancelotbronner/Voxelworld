@@ -39,13 +39,13 @@ int get_client_enabled() {
     return client_enabled;
 }
 
-int client_sendall(int sd, char *data, int length) {
+int client_sendall(int sd, char *data, size_t length) {
     if (!client_enabled) {
         return 0;
     }
     int count = 0;
     while (count < length) {
-        int n = send(sd, data + count, length, 0);
+        ssize_t n = send(sd, data + count, length, 0);
         if (n == -1) {
             return -1;
         }
@@ -163,11 +163,11 @@ char *client_recv() {
         p--;
     }
     if (p >= queue) {
-        int length = p - queue + 1;
+        size_t length = p - queue + 1;
         result = malloc(sizeof(char) * (length + 1));
         memcpy(result, queue, sizeof(char) * length);
         result[length] = '\0';
-        int remaining = qsize - length;
+        size_t remaining = qsize - length;
         memmove(queue, p + 1, remaining);
         qsize -= length;
         bytes_received += length;
@@ -179,7 +179,7 @@ char *client_recv() {
 int recv_worker(void *arg) {
     char *data = malloc(sizeof(char) * RECV_SIZE);
     while (1) {
-        int length;
+        ssize_t length;
         if ((length = recv(sd, data, RECV_SIZE - 1, 0)) <= 0) {
             if (running) {
                 perror("recv");

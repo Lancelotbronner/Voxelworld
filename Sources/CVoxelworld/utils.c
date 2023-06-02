@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <lodepng.h>
-#include "matrix.h"
+#include <cglm/cglm.h>
 #include "utils.h"
 
 int rand_int(int n) {
@@ -34,7 +34,7 @@ char *load_file(const char *path) {
         exit(1);
     }
     fseek(file, 0, SEEK_END);
-    int length = ftell(file);
+    size_t length = ftell(file);
     rewind(file);
     char *data = calloc(length + 1, sizeof(char));
     fread(data, 1, length, file);
@@ -182,10 +182,9 @@ int char_width(char input) {
 
 int string_width(const char *input) {
     int result = 0;
-    int length = strlen(input);
-    for (int i = 0; i < length; i++) {
+    size_t length = strlen(input);
+    for (int i = 0; i < length; i++)
         result += char_width(input[i]);
-    }
     return result;
 }
 
