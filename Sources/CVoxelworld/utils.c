@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <lodepng.h>
-#include "matrix.h"
+#include <cglm/cglm.h>
 #include "utils.h"
 
 int rand_int(int n) {

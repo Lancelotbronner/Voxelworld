@@ -3,6 +3,7 @@
 #include "item.h"
 #include "matrix.h"
 #include "utils.h"
+#include <cglm/cglm.h>
 
 void make_cube_faces(
     float *data, float ao[6][4], float light[6][4],
@@ -146,14 +147,13 @@ void make_plant(
             *(d++) = light;
         }
     }
-    float ma[16];
-    float mb[16];
-    mat_identity(ma);
-    mat_rotate(mb, 0, 1, 0, RADIANS(rotation));
-    mat_multiply(ma, mb, ma);
+	mat4 ma = GLM_MAT4_IDENTITY;
+    mat4 mb = GLM_MAT4_IDENTITY;
+	glm_rotate_y(mb, RADIANS(rotation), mb);
+	glm_mat4_mul(mb, ma, ma);
     mat_apply(data, ma, 24, 3, 10);
-    mat_translate(mb, px, py, pz);
-    mat_multiply(ma, mb, ma);
+	glm_translate(mb, (vec3){ px, py, pz });
+	glm_mat4_mul(mb, ma, ma);
     mat_apply(data, ma, 24, 0, 10);
 }
 
@@ -175,16 +175,15 @@ void make_player(
         1, 1, 1, 1, 1, 1,
         226, 224, 241, 209, 225, 227,
         0, 0, 0, 0.4);
-    float ma[16];
-    float mb[16];
-    mat_identity(ma);
-    mat_rotate(mb, 0, 1, 0, rx);
-    mat_multiply(ma, mb, ma);
-    mat_rotate(mb, cosf(rx), 0, sinf(rx), -ry);
-    mat_multiply(ma, mb, ma);
+	mat4 ma = GLM_MAT4_IDENTITY;
+	mat4 mb = GLM_MAT4_IDENTITY;
+	glm_rotate_y(mb, rx, mb);
+	glm_mul(mb, ma, ma);
+	glm_rotate(mb, -ry, (vec3){ cosf(rx), 0, sinf(rx) });
+	glm_mul(mb, ma, ma);
     mat_apply(data, ma, 36, 3, 10);
-    mat_translate(mb, x, y, z);
-    mat_multiply(ma, mb, ma);
+	glm_translate(mb, (vec3){ x, y, z });
+	glm_mul(mb, ma, ma);
     mat_apply(data, ma, 36, 0, 10);
 }
 
@@ -316,16 +315,16 @@ int _make_sphere(
         return 1;
     }
     else {
-        float ab[3], ac[3], bc[3];
+        vec3 ab, ac, bc;
         for (int i = 0; i < 3; i++) {
             ab[i] = (a[i] + b[i]) / 2;
             ac[i] = (a[i] + c[i]) / 2;
             bc[i] = (b[i] + c[i]) / 2;
         }
-        normalize(ab + 0, ab + 1, ab + 2);
-        normalize(ac + 0, ac + 1, ac + 2);
-        normalize(bc + 0, bc + 1, bc + 2);
-        float tab[2], tac[2], tbc[2];
+		glm_vec3_normalize(ab);
+		glm_vec3_normalize(ac);
+		glm_vec3_normalize(bc);
+        vec2 tab, tac, tbc;
         tab[0] = 0; tab[1] = 1 - acosf(ab[1]) / PI;
         tac[0] = 0; tac[1] = 1 - acosf(ac[1]) / PI;
         tbc[0] = 0; tbc[1] = 1 - acosf(bc[1]) / PI;
