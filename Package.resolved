@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "cglm",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/recp/cglm",
+      "state" : {
+        "branch" : "master",
+        "revision" : "530ec2d0f89a34887448adcd92f8ea9e5982ef33"
+      }
+    }
+  ],
+  "version" : 2
+}

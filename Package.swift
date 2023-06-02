@@ -6,6 +6,9 @@ var package = Package(
 	platforms: [
 		.macOS(.v10_15),
 	],
+	dependencies: [
+		.package(url: "https://github.com/recp/cglm", branch: "master"),
+	],
 	targets: [
 
 //		.executableTarget(
@@ -19,6 +22,7 @@ var package = Package(
 				"noise",
 				"tinycthread",
 				"lodepng",
+				.product(name: "cglm", package: "cglm"),
 			],
 			resources: [
 				.copy("textures"),
