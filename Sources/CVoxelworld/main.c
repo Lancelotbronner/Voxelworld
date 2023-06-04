@@ -2691,8 +2691,7 @@ int main(int argc, char **argv) {
     Attrib sky_attrib = {0};
     GLuint program;
 
-    program = load_program(
-        "shaders/block_vertex.glsl", "shaders/block_fragment.glsl");
+    program = load_program("block", "shaders/block.vert", "shaders/block.frag");
     block_attrib.program = program;
     block_attrib.position = glGetAttribLocation(program, "position");
     block_attrib.normal = glGetAttribLocation(program, "normal");
@@ -2706,23 +2705,12 @@ int main(int argc, char **argv) {
     block_attrib.camera = glGetUniformLocation(program, "camera");
     block_attrib.timer = glGetUniformLocation(program, "timer");
 
-    program = load_program(
-        "shaders/line_vertex.glsl", "shaders/line_fragment.glsl");
+    program = load_program("line", "shaders/line.vert", "shaders/line.frag");
     line_attrib.program = program;
     line_attrib.position = glGetAttribLocation(program, "position");
     line_attrib.matrix = glGetUniformLocation(program, "matrix");
 
-    program = load_program(
-        "shaders/text_vertex.glsl", "shaders/text_fragment.glsl");
-    text_attrib.program = program;
-    text_attrib.position = glGetAttribLocation(program, "position");
-    text_attrib.uv = glGetAttribLocation(program, "uv");
-    text_attrib.matrix = glGetUniformLocation(program, "matrix");
-    text_attrib.sampler = glGetUniformLocation(program, "sampler");
-    text_attrib.extra1 = glGetUniformLocation(program, "is_sign");
-
-    program = load_program(
-        "shaders/sky_vertex.glsl", "shaders/sky_fragment.glsl");
+    program = load_program("sky", "shaders/sky.vert", "shaders/sky.frag");
     sky_attrib.program = program;
     sky_attrib.position = glGetAttribLocation(program, "position");
     sky_attrib.normal = glGetAttribLocation(program, "normal");
@@ -2730,6 +2718,14 @@ int main(int argc, char **argv) {
     sky_attrib.matrix = glGetUniformLocation(program, "matrix");
     sky_attrib.sampler = glGetUniformLocation(program, "sampler");
     sky_attrib.timer = glGetUniformLocation(program, "timer");
+
+	program = load_program("text", "shaders/text.vert", "shaders/text.frag");
+	text_attrib.program = program;
+	text_attrib.position = glGetAttribLocation(program, "position");
+	text_attrib.uv = glGetAttribLocation(program, "uv");
+	text_attrib.matrix = glGetUniformLocation(program, "matrix");
+	text_attrib.sampler = glGetUniformLocation(program, "sampler");
+	text_attrib.extra1 = glGetUniformLocation(program, "is_sign");
 
     // CHECK COMMAND LINE ARGUMENTS //
     if (argc == 2 || argc == 3) {

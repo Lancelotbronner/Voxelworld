@@ -1,20 +1,20 @@
-#version 120
+#version 410 core
 
 uniform mat4 matrix;
 uniform vec3 camera;
 uniform float fog_distance;
 uniform int ortho;
 
-attribute vec4 position;
-attribute vec3 normal;
-attribute vec4 uv;
+in vec4 position;
+in vec3 normal;
+in vec4 uv;
 
-varying vec2 fragment_uv;
-varying float fragment_ao;
-varying float fragment_light;
-varying float fog_factor;
-varying float fog_height;
-varying float diffuse;
+out vec2 fragment_uv;
+out float fragment_ao;
+out float fragment_light;
+out float fog_factor;
+out float fog_height;
+out float diffuse;
 
 const float pi = 3.14159265;
 const vec3 light_direction = normalize(vec3(-1.0, 1.0, -1.0));
