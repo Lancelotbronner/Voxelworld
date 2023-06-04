@@ -66,7 +66,7 @@ GLuint gen_faces(int components, int faces, GLfloat *data) {
     return buffer;
 }
 
-GLuint make_shader(GLenum type, const char *source) {
+GLuint make_shader(const char *name, GLenum type, const char *source) {
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &source, NULL);
     glCompileShader(shader);
@@ -77,20 +77,24 @@ GLuint make_shader(GLenum type, const char *source) {
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
         GLchar *info = calloc(length, sizeof(GLchar));
         glGetShaderInfoLog(shader, length, NULL, info);
-        fprintf(stderr, "glCompileShader failed:\n%s\n", info);
+        fprintf(stderr, "[OpenGL] Failed to compile shader at '%s':\n%s\n", name, info);
         free(info);
+		exit(EXIT_FAILURE);
     }
     return shader;
 }
 
 GLuint load_shader(GLenum type, const char *path) {
     char *data = load_file(path);
-    GLuint result = make_shader(type, data);
+	const char *filename = strrchr(path, "/");
+	if (!filename)
+		filename = path;
+    GLuint result = make_shader(filename, type, data);
     free(data);
     return result;
 }
 
-GLuint make_program(GLuint shader1, GLuint shader2) {
+GLuint make_program(const char *name, GLuint shader1, GLuint shader2) {
     GLuint program = glCreateProgram();
     glAttachShader(program, shader1);
     glAttachShader(program, shader2);
@@ -102,8 +106,9 @@ GLuint make_program(GLuint shader1, GLuint shader2) {
         glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
         GLchar *info = calloc(length, sizeof(GLchar));
         glGetProgramInfoLog(program, length, NULL, info);
-        fprintf(stderr, "glLinkProgram failed: %s\n", info);
+        fprintf(stderr, "[OpenGL] Failed to link program '%s': %s\n", name, info);
         free(info);
+		exit(EXIT_FAILURE);
     }
     glDetachShader(program, shader1);
     glDetachShader(program, shader2);
@@ -112,10 +117,10 @@ GLuint make_program(GLuint shader1, GLuint shader2) {
     return program;
 }
 
-GLuint load_program(const char *path1, const char *path2) {
+GLuint load_program(const char *name, const char *path1, const char *path2) {
     GLuint shader1 = load_shader(GL_VERTEX_SHADER, path1);
     GLuint shader2 = load_shader(GL_FRAGMENT_SHADER, path2);
-    GLuint program = make_program(shader1, shader2);
+    GLuint program = make_program(name, shader1, shader2);
     return program;
 }
 

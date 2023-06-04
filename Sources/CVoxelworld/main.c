@@ -2602,6 +2602,10 @@ void chdir_resources() {
 #endif
 }
 
+void on_glfw_error(int error, const char* description) {
+	fprintf(stderr, "[glfw error %d]: %s\n", error, description);
+}
+
 int main(int argc, char **argv) {
 	chdir_resources();
 
@@ -2614,7 +2618,18 @@ int main(int argc, char **argv) {
     if (!glfwInit()) {
         return -1;
     }
+
+#if DEBUG
+	glfwSetErrorCallback(on_glfw_error);
+	glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+#endif
+
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     create_window();
+
     if (!g->window) {
         glfwTerminate();
         return -1;
@@ -2628,10 +2643,7 @@ int main(int argc, char **argv) {
     glfwSetMouseButtonCallback(g->window, on_mouse_button);
     glfwSetScrollCallback(g->window, on_scroll);
 
-//    if (glewInit() != GLEW_OK) {
-//        return -1;
-//    }
-
+	printf("OpenGL v%s\n", glGetString(GL_VERSION));
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
     glLogicOp(GL_INVERT);
