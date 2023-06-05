@@ -2587,7 +2587,7 @@ void reset_model() {
 }
 
 void chdir_resources() {
-#if defined(__APPLE__)
+#if defined __APPLE__
 	// macOS workaround for setting the working directory to the location of the .app
 	CFBundleRef bundle = CFBundleGetMainBundle();
 	CFURLRef bundleURL = CFBundleCopyBundleURL(bundle);
@@ -2605,6 +2605,12 @@ void chdir_resources() {
 void on_glfw_error(int error, const char* description) {
 	fprintf(stderr, "[glfw error %d]: %s\n", error, description);
 }
+
+#if !defined __APPLE__
+void on_opengl_error(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message, const void *userParam) {
+	fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n", (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""), type, severity, message );
+}
+#endif
 
 int main(int argc, char **argv) {
 	chdir_resources();
@@ -2648,6 +2654,13 @@ int main(int argc, char **argv) {
     glEnable(GL_DEPTH_TEST);
     glLogicOp(GL_INVERT);
     glClearColor(0, 0, 0, 1);
+
+#if DEBUG && !defined __APPLE__
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	glDebugMessageCallback(on_opengl_error, NULL);
+	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+#endif
 
     // LOAD TEXTURES //
     GLuint texture;
@@ -2755,6 +2768,12 @@ int main(int argc, char **argv) {
         thrd_create(&worker->thrd, worker_run, worker);
     }
 
+	GLint error;
+	while (error = glGetError(), error != GL_NO_ERROR)
+		fprintf(stderr, "[OpenGL] error %d\n", error);
+
+	printf("[Voxelworld] Initialized successfully\n");
+
     // OUTER LOOP //
     int running = 1;
     while (running) {
@@ -2799,6 +2818,11 @@ int main(int argc, char **argv) {
         if (!loaded) {
             s->y = highest_block(s->x, s->z) + 2;
         }
+
+		GLint error;
+		while (error = glGetError(), error != GL_NO_ERROR)
+			fprintf(stderr, "[OpenGL] error %d\n", error);
+		printf("[Voxelworld] Successfully loaded into %s mode\n", g->mode == MODE_ONLINE ? "online" : "offline");
 
         // BEGIN MAIN LOOP //
         double previous = glfwGetTime();
@@ -2870,6 +2894,7 @@ int main(int argc, char **argv) {
             if (SHOW_WIREFRAME) {
                 render_wireframe(&line_attrib, player);
             }
+			printf("not SCENE\n");
 
             // RENDER HUD //
             glClear(GL_DEPTH_BUFFER_BIT);
@@ -2962,6 +2987,10 @@ int main(int argc, char **argv) {
                 }
             }
 
+			GLint error;
+			while (error = glGetError(), error != GL_NO_ERROR)
+				fprintf(stderr, "[OpenGL] error %d\n", error);
+
             // SWAP AND POLL //
             glfwSwapBuffers(g->window);
             glfwPollEvents();
@@ -2969,6 +2998,7 @@ int main(int argc, char **argv) {
                 running = 0;
                 break;
             }
+
             if (g->mode_changed) {
                 g->mode_changed = 0;
                 break;

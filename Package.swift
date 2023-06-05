@@ -29,6 +29,10 @@ var package = Package(
 				.copy("shaders"),
 				.copy("timeofday.txt"),
 			],
+			cSettings: [
+				.define("GLFW_INCLUDE_GLCOREARB"),
+				.define("GL_SILENCE_DEPRECATION"),
+			],
 			linkerSettings: [
 				.linkedFramework("Cocoa"),
 				.linkedLibrary("curl"),
@@ -37,10 +41,7 @@ var package = Package(
 
 		// Dependencies
 
-		.binaryTarget(
-			name: "glfw3",
-			path: "Dependencies/glfw/glfw3.xcframework"
-		),
+		.binaryTarget(name: "glfw3", path: "Dependencies/glfw/glfw3.xcframework"),
 
 		.target(name: "noise", path: "Dependencies/noise"),
 		.target(name: "tinycthread", path: "Dependencies/tinycthread"),
