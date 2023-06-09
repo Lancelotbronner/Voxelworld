@@ -3,88 +3,172 @@
 #include "item.h"
 #include "matrix.h"
 #include "utils.h"
-#include <cglm/cglm.h>
+#include "mesh.h"
 
-void make_cube_faces(
-    float *data, float ao[6][4], float light[6][4],
-    int left, int right, int top, int bottom, int front, int back,
-    int wleft, int wright, int wtop, int wbottom, int wfront, int wback,
-    float x, float y, float z, float n)
-{
-    static const float positions[6][4][3] = {
-        {{-1, -1, -1}, {-1, -1, +1}, {-1, +1, -1}, {-1, +1, +1}},
-        {{+1, -1, -1}, {+1, -1, +1}, {+1, +1, -1}, {+1, +1, +1}},
-        {{-1, +1, -1}, {-1, +1, +1}, {+1, +1, -1}, {+1, +1, +1}},
-        {{-1, -1, -1}, {-1, -1, +1}, {+1, -1, -1}, {+1, -1, +1}},
-        {{-1, -1, -1}, {-1, +1, -1}, {+1, -1, -1}, {+1, +1, -1}},
-        {{-1, -1, +1}, {-1, +1, +1}, {+1, -1, +1}, {+1, +1, +1}}
-    };
-    static const float normals[6][3] = {
-        {-1, 0, 0},
-        {+1, 0, 0},
-        {0, +1, 0},
-        {0, -1, 0},
-        {0, 0, -1},
-        {0, 0, +1}
-    };
-    static const float uvs[6][4][2] = {
-        {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
-        {{1, 0}, {0, 0}, {1, 1}, {0, 1}},
-        {{0, 1}, {0, 0}, {1, 1}, {1, 0}},
-        {{0, 0}, {0, 1}, {1, 0}, {1, 1}},
-        {{0, 0}, {0, 1}, {1, 0}, {1, 1}},
-        {{1, 0}, {1, 1}, {0, 0}, {0, 1}}
-    };
-    static const float indices[6][6] = {
-        {0, 3, 2, 0, 1, 3},
-        {0, 3, 1, 0, 2, 3},
-        {0, 3, 2, 0, 1, 3},
-        {0, 3, 1, 0, 2, 3},
-        {0, 3, 2, 0, 1, 3},
-        {0, 3, 1, 0, 2, 3}
-    };
-    static const float flipped[6][6] = {
-        {0, 1, 2, 1, 3, 2},
-        {0, 2, 1, 2, 3, 1},
-        {0, 1, 2, 1, 3, 2},
-        {0, 2, 1, 2, 3, 1},
-        {0, 1, 2, 1, 3, 2},
-        {0, 2, 1, 2, 3, 1}
-    };
-    float *d = data;
-    float s = 0.0625;
-    float a = 0 + 1 / 2048.0;
-    float b = s - 1 / 2048.0;
-    int faces[6] = {left, right, top, bottom, front, back};
-    int tiles[6] = {wleft, wright, wtop, wbottom, wfront, wback};
-    for (int i = 0; i < 6; i++) {
-        if (faces[i] == 0) {
-            continue;
-        }
-        float du = (tiles[i] % 16) * s;
-        float dv = (tiles[i] / 16) * s;
-        int flip = ao[i][0] + ao[i][3] > ao[i][1] + ao[i][2];
-        for (int v = 0; v < 6; v++) {
-            int j = flip ? flipped[i][v] : indices[i][v];
-            *(d++) = x + n * positions[i][j][0];
-            *(d++) = y + n * positions[i][j][1];
-            *(d++) = z + n * positions[i][j][2];
-            *(d++) = normals[i][0];
-            *(d++) = normals[i][1];
-            *(d++) = normals[i][2];
-            *(d++) = du + (uvs[i][j][0] ? b : a);
-            *(d++) = dv + (uvs[i][j][1] ? b : a);
-            *(d++) = ao[i][j];
-            *(d++) = light[i][j];
-        }
-    }
+void make_cube_faces(size_t index, unsigned short *indices, struct vertex_s *vertices, float ao[6][4], float light[6][4], int left, int right, int top, int bottom, int front, int back, int wleft, int wright, int wtop, int wbottom, int wfront, int wback, float px, float py, float pz, float n) {
+
+	int faces[6] = { left, right, top, bottom, front, back };
+	int tiles[6] = { wleft, wright, wtop, wbottom, wfront, wback };
+	int i = -1;
+	int j = 0;
+
+	// Prepare the templates
+
+#define flipped \
+	ao[i][0] + ao[i][3] > ao[i][1] + ao[i][2]
+
+#define triangle(t0, t1, t2) \
+	*indices++ = index + t0; \
+	*indices++ = index + t1; \
+	*indices++ = index + t2; \
+	index += 3;
+
+	vec4 normalv = GLM_VEC4_ZERO;
+#define normals(x, y, z) \
+	normalv[0] = x; \
+	normalv[1] = y; \
+	normalv[2] = z
+
+	float du, dv;
+#define uvs \
+	du = tiles[i] % 16 * s; \
+	dv = tiles[i] / 16 * s
+
+	float s = 0.0625;
+	float a = 1 / 2048.0;
+	float b = s - a;
+#define vertex(x, y, z, u, v) \
+	*vertices++ = (struct vertex_s) { \
+		.position = { n * x, n * y, n * z }, \
+		.normal = { normalv[0], normalv[1], normalv[2] }, \
+		.uv = { du + (u ? b : a), dv + (v ? b : a) }, \
+		.ao = ao[i][j], \
+		.light = light[i][j], \
+	}; j++;
+
+#define face \
+	j = 0; \
+	if (faces[++i] != 0)
+
+	//TODO: Make this use templates
+
+	face {
+		uvs;
+		normals(-1, 0, 0);
+
+		if (flipped) {
+			triangle(0, 1, 2);
+			triangle(1, 3, 2);
+		} else {
+			triangle(0, 3, 2);
+			triangle(0, 1, 3);
+		}
+
+		vertex(-1, -1, -1, 0, 0);
+		vertex(-1, -1, +1, 1, 0);
+		vertex(-1, +1, -1, 0, 1);
+		vertex(-1, +1, +1, 1, 1);
+	}
+
+	face {
+		uvs;
+		normals(+1, 0, 0);
+
+		if (flipped) {
+			triangle(0, 2, 1);
+			triangle(2, 3, 1);
+		} else {
+			triangle(0, 3, 1);
+			triangle(0, 2, 3);
+		}
+
+		vertex(+1, -1, -1, 1, 0);
+		vertex(+1, -1, +1, 0, 0);
+		vertex(+1, +1, -1, 1, 1);
+		vertex(+1, +1, +1, 0, 1);
+	}
+
+	face {
+		uvs;
+		normals(0, +1, 0);
+
+		if (flipped) {
+			triangle(0, 1, 2);
+			triangle(1, 3, 2);
+		} else {
+			triangle(0, 3, 2);
+			triangle(0, 1, 3);
+		}
+
+		vertex(-1, +1, -1, 0, 1);
+		vertex(-1, +1, +1, 0, 0);
+		vertex(+1, +1, -1, 1, 1);
+		vertex(+1, +1, +1, 1, 0);
+	}
+
+	face {
+		uvs;
+		normals(0, -1, 0);
+
+		if (flipped) {
+			triangle(0, 2, 1);
+			triangle(2, 3, 1);
+		} else {
+			triangle(0, 3, 1);
+			triangle(0, 2, 3);
+		}
+
+		vertex(-1, -1, -1, 0, 0);
+		vertex(-1, -1, +1, 0, 1);
+		vertex(+1, -1, -1, 1, 0);
+		vertex(+1, -1, +1, 1, 1);
+	}
+
+	face {
+		uvs;
+		normals(0, 0, -1);
+
+		if (flipped) {
+			triangle(0, 1, 2);
+			triangle(1, 3, 2);
+		} else {
+			triangle(0, 3, 2);
+			triangle(0, 1, 3);
+		}
+
+		vertex(-1, -1, -1, 0, 0);
+		vertex(-1, +1, -1, 0, 1);
+		vertex(+1, -1, -1, 1, 0);
+		vertex(+1, +1, -1, 1, 1);
+	}
+
+	face {
+		uvs;
+		normals(0, 0, +1);
+
+		if (flipped) {
+			triangle(0, 2, 1);
+			triangle(2, 3, 1);
+		} else {
+			triangle(0, 3, 1);
+			triangle(0, 2, 3);
+		}
+
+		vertex(-1, -1, +1, 1, 0);
+		vertex(-1, +1, +1, 1, 1);
+		vertex(+1, -1, +1, 0, 0);
+		vertex(+1, +1, +1, 0, 1);
+	}
+
+#undef face
+#undef uvs
+#undef normals
+#undef triangle
+#undef flipped
+#undef vertex
 }
 
-void make_cube(
-    float *data, float ao[6][4], float light[6][4],
-    int left, int right, int top, int bottom, int front, int back,
-    float x, float y, float z, float n, int w)
-{
+void make_cube(size_t index, unsigned short *indices, struct vertex_s *vertices, float ao[6][4], float light[6][4], int left, int right, int top, int bottom, int front, int back, float x, float y, float z, float n, int w) {
     int wleft = blocks[w][0];
     int wright = blocks[w][1];
     int wtop = blocks[w][2];
@@ -92,75 +176,210 @@ void make_cube(
     int wfront = blocks[w][4];
     int wback = blocks[w][5];
     make_cube_faces(
-        data, ao, light,
+        index, indices, vertices, ao, light,
         left, right, top, bottom, front, back,
         wleft, wright, wtop, wbottom, wfront, wback,
         x, y, z, n);
 }
 
-void make_plant(
-    float *data, float ao, float light,
-    float px, float py, float pz, float n, int w, float rotation)
-{
-    static const float positions[4][4][3] = {
-        {{ 0, -1, -1}, { 0, -1, +1}, { 0, +1, -1}, { 0, +1, +1}},
-        {{ 0, -1, -1}, { 0, -1, +1}, { 0, +1, -1}, { 0, +1, +1}},
-        {{-1, -1,  0}, {-1, +1,  0}, {+1, -1,  0}, {+1, +1,  0}},
-        {{-1, -1,  0}, {-1, +1,  0}, {+1, -1,  0}, {+1, +1,  0}}
-    };
-    static const float normals[4][3] = {
-        {-1, 0, 0},
-        {+1, 0, 0},
-        {0, 0, -1},
-        {0, 0, +1}
-    };
-    static const float uvs[4][4][2] = {
-        {{0, 0}, {1, 0}, {0, 1}, {1, 1}},
-        {{1, 0}, {0, 0}, {1, 1}, {0, 1}},
-        {{0, 0}, {0, 1}, {1, 0}, {1, 1}},
-        {{1, 0}, {1, 1}, {0, 0}, {0, 1}}
-    };
-    static const float indices[4][6] = {
-        {0, 3, 2, 0, 1, 3},
-        {0, 3, 1, 0, 2, 3},
-        {0, 3, 2, 0, 1, 3},
-        {0, 3, 1, 0, 2, 3}
-    };
-    float *d = data;
-    float s = 0.0625;
-    float a = 0;
-    float b = s;
-    float du = (plants[w] % 16) * s;
-    float dv = (plants[w] / 16) * s;
-    for (int i = 0; i < 4; i++) {
-        for (int v = 0; v < 6; v++) {
-            int j = indices[i][v];
-            *(d++) = n * positions[i][j][0];
-            *(d++) = n * positions[i][j][1];
-            *(d++) = n * positions[i][j][2];
-            *(d++) = normals[i][0];
-            *(d++) = normals[i][1];
-            *(d++) = normals[i][2];
-            *(d++) = du + (uvs[i][j][0] ? b : a);
-            *(d++) = dv + (uvs[i][j][1] ? b : a);
-            *(d++) = ao;
-            *(d++) = light;
-        }
-    }
-	mat4 ma = GLM_MAT4_IDENTITY;
-    mat4 mb = GLM_MAT4_IDENTITY;
-	glm_rotate_y(mb, RADIANS(rotation), mb);
-	glm_mat4_mul(mb, ma, ma);
-    mat_apply(data, ma, 24, 3, 10);
-	glm_translate(mb, (vec3){ px, py, pz });
-	glm_mat4_mul(mb, ma, ma);
-    mat_apply(data, ma, 24, 0, 10);
+void make_plant(size_t index, unsigned short *indices, struct vertex_s *vertices, float ao, float light, float px, float py, float pz, float n, int w, float rotation) {
+	// Calculate UVs from bottom-left to top-right
+	float s = 0.0625;
+	float du = plants[w] % 16 * s;
+	float dv = plants[w] / 16 * s;
+
+	// Prepare normals rotation
+	mat4 rotate = GLM_MAT4_IDENTITY;
+	glm_rotate_y(rotate, RADIANS(rotation), rotate);
+
+	// Prepare position translation
+	mat4 translate = GLM_MAT4_IDENTITY;
+	glm_translate_make(translate, (vec3){ px, py, pz });
+	glm_mul(translate, rotate, translate);
+
+	// Prepare templates
+
+#define triangle(t0, t1, t2) \
+	*indices++ = index + t0; \
+	*indices++ = index + t1; \
+	*indices++ = index + t2; \
+	index += 3
+
+	vec4 normalv = GLM_VEC4_ZERO;
+#define normals(x, y, z) \
+	glm_mat4_mulv(rotate, (vec4){ x, y, z, 0 }, normalv)
+
+	vec4 positionv = GLM_VEC4_ZERO;
+#define vertex(x, y, z, u, v) \
+	glm_mat4_mulv(translate, (vec4){ n * x, n * y, n * z, 0 }, positionv); \
+	*vertices++ = (struct vertex_s) { \
+		.position = { positionv[0], positionv[1], positionv[2] }, \
+		.normal = { normalv[0], normalv[1], normalv[2] }, \
+		.uv = { du + u * s, dv + v * s }, \
+		.ao = ao, \
+		.light = light, \
+	}
+
+	// Face #0
+	normals(-1, 0, 0);
+	vertex(0, -1, -1, 0, 0);
+	vertex(0, -1, +1, 1, 0);
+	vertex(0, +1, -1, 0, 1);
+	vertex(0, +1, +1, 1, 1);
+	triangle(0, 3, 2);
+	triangle(0, 1, 3);
+
+	// Face #1 (mirror of #0)
+	normals(+1, 0, 0);
+	vertex(0, -1, -1, 1, 0);
+	vertex(0, -1, +1, 0, 0);
+	vertex(0, +1, -1, 1, 1);
+	vertex(0, +1, +1, 0, 1);
+	triangle(0, 3, 1);
+	triangle(0, 2, 3);
+
+	// Face #2
+	normals(0, 0, -1);
+	vertex(-1, -1, 0, 0, 0);
+	vertex(-1, +1, 0, 0, 1);
+	vertex(+1, -1, 0, 1, 0);
+	vertex(+1, +1, 0, 1, 1);
+	triangle(0, 3, 2);
+	triangle(0, 1, 3);
+
+	// Face #3 (mirror of #2)
+	normals(0, 0, +1);
+	vertex(-1, -1, 0, 1, 0);
+	vertex(-1, +1, 0, 1, 1);
+	vertex(+1, -1, 0, 0, 0);
+	vertex(+1, +1, 0, 0, 1);
+	triangle(0, 3, 1);
+	triangle(0, 2, 3);
+
+#undef normals
+#undef triangle
+#undef vertex
 }
 
-void make_player(
-    float *data,
-    float x, float y, float z, float rx, float ry)
-{
+void generate_cross_geometry(geometry_t geometry, int id, float ao, float light, float x, float y, float z, float rotation) {
+	// Calculate the UV offset
+	float du = plants[id] % 16 / 16;
+	float dv = plants[id] / 16 / 16;
+	geometry_uvs_offset(geometry, du, dv);
+
+	// Prepare the lighting information
+	geometry_lighting(geometry, ao, light);
+
+	// Prepare normals rotation
+	mat4 rotate = GLM_MAT4_IDENTITY;
+	glm_rotate_y(rotate, RADIANS(rotation), rotate);
+
+	// Face #1
+
+	geometry_normals(geometry, -1, 0, 0);
+	geometry_triangle(geometry, 0, 3, 2);
+	geometry_triangle(geometry, 0, 1, 3);
+
+	geometry_position(geometry, 0, -1, -1);
+	geometry_uvs(geometry, 0, 0);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, 0, -1, +1);
+	geometry_uvs(geometry, 1, 0);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, 0, +1, -1);
+	geometry_uvs(geometry, 0, 1);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, 0, +1, +1);
+	geometry_uvs(geometry, 1, 1);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	// Face #2 (mirror of #1)
+
+	geometry_normals(geometry, +1, 0, 0);
+	geometry_triangle(geometry, 0, 3, 1);
+	geometry_triangle(geometry, 0, 2, 3);
+
+	geometry_position(geometry, 0, -1, -1);
+	geometry_uvs(geometry, 1, 0);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, 0, -1, +1);
+	geometry_uvs(geometry, 0, 0);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, 0, +1, -1);
+	geometry_uvs(geometry, 1, 1);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, 0, +1, +1);
+	geometry_uvs(geometry, 0, 1);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	// Face #3
+
+	geometry_normals(geometry, 0, 0, -1);
+	geometry_triangle(geometry, 0, 3, 2);
+	geometry_triangle(geometry, 0, 1, 3);
+
+	geometry_position(geometry, -1, -1, 0);
+	geometry_uvs(geometry, 0, 0);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, -1, +1, 0);
+	geometry_uvs(geometry, 0, 1);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, +1, -1, 0);
+	geometry_uvs(geometry, 1, 0);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, +1, +1, 0);
+	geometry_uvs(geometry, 1, 1);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	// Face #4 (mirror of #3)
+
+	geometry_normals(geometry, 0, 0, +1);
+	geometry_triangle(geometry, 0, 3, 1);
+	geometry_triangle(geometry, 0, 2, 3);
+
+	geometry_position(geometry, -1, -1, 0);
+	geometry_uvs(geometry, 1, 0);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, -1, +1, 0);
+	geometry_uvs(geometry, 1, 1);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, +1, -1, 0);
+	geometry_uvs(geometry, 0, 0);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, +1, +1, 0);
+	geometry_uvs(geometry, 0, 1);
+	geometry_position_apply(geometry, rotate);
+	geometry_vertex(geometry);
+}
+
+void make_player(size_t index, unsigned short *indices, struct vertex_s *vertices, float x, float y, float z, float rx, float ry) {
     float ao[6][4] = {0};
     float light[6][4] = {
         {0.8, 0.8, 0.8, 0.8},
@@ -171,7 +390,7 @@ void make_player(
         {0.8, 0.8, 0.8, 0.8}
     };
     make_cube_faces(
-        data, ao, light,
+        index, indices, vertices, ao, light,
         1, 1, 1, 1, 1, 1,
         226, 224, 241, 209, 225, 227,
         0, 0, 0, 0.4);

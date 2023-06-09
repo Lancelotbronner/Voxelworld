@@ -20,6 +20,7 @@
 #include <tinycthread.h>
 #include "utils.h"
 #include "world.h"
+#include "mesh.h"
 
 #if defined(__APPLE__)
 #include <CoreFoundation/CoreFoundation.h>
@@ -55,7 +56,7 @@ typedef struct {
     int dirty;
     int miny;
     int maxy;
-    GLuint buffer;
+    mesh_t mesh;
     GLuint sign_buffer;
 } Chunk;
 
@@ -67,8 +68,9 @@ typedef struct {
     Map *light_maps[3][3];
     int miny;
     int maxy;
-    int faces;
-    GLfloat *data;
+	GLsizei faces;
+	struct vertex_s *vertices;
+    GLushort *indices;
 } WorkerItem;
 
 typedef struct {
@@ -373,7 +375,7 @@ void draw_lines(Attrib *attrib, GLuint buffer, int components, int count) {
 }
 
 void draw_chunk(Attrib *attrib, Chunk *chunk) {
-    draw_triangles_3d_ao(attrib, chunk->buffer, chunk->faces * 6);
+	mesh_draw(&chunk->mesh);
 }
 
 void draw_item(Attrib *attrib, GLuint buffer, int count) {
@@ -975,9 +977,8 @@ void compute_chunk(WorkerItem *item) {
         for (int a = 0; a < 3; a++) {
             for (int b = 0; b < 3; b++) {
                 Map *map = item->light_maps[a][b];
-                if (map && map->size) {
+                if (map && map->size)
                     has_light = 1;
-                }
             }
         }
     }
@@ -1060,7 +1061,8 @@ void compute_chunk(WorkerItem *item) {
     } END_MAP_FOR_EACH;
 
     // generate geometry
-    GLfloat *data = malloc_faces(10, faces);
+	GLushort *indices = malloc(sizeof(GLushort) * 6 * faces);
+	struct vertex_s *vertices = malloc(sizeof(struct vertex_s) * 4 * faces);
     int offset = 0;
     MAP_FOR_EACH(map, ex, ey, ez, ew) {
         if (ew <= 0) {
@@ -1115,17 +1117,12 @@ void compute_chunk(WorkerItem *item) {
                 }
             }
             float rotation = simplex2(ex, ez, 4, 0.5, 2) * 360;
-            make_plant(
-                data + offset, min_ao, max_light,
-                ex, ey, ez, 0.5, ew, rotation);
+            make_plant(offset * 6, indices + offset * 6, vertices + offset * 4, min_ao, max_light, ex, ey, ez, 0.5, ew, rotation);
         }
         else {
-            make_cube(
-                data + offset, ao, light,
-                f1, f2, f3, f4, f5, f6,
-                ex, ey, ez, 0.5, ew);
+            make_cube(offset * 6, indices + offset * 6, vertices + offset * 4, ao, light, f1, f2, f3, f4, f5, f6, ex, ey, ez, 0.5, ew);
         }
-        offset += total * 60;
+        offset += total;
     } END_MAP_FOR_EACH;
 
     free(opaque);
@@ -1135,15 +1132,29 @@ void compute_chunk(WorkerItem *item) {
     item->miny = miny;
     item->maxy = maxy;
     item->faces = faces;
-    item->data = data;
+    item->indices = indices;
+	item->vertices = vertices;
 }
 
 void generate_chunk(Chunk *chunk, WorkerItem *item) {
     chunk->miny = item->miny;
     chunk->maxy = item->maxy;
-    chunk->faces = item->faces;
-    del_buffer(chunk->buffer);
-    chunk->buffer = gen_faces(10, item->faces, item->data);
+
+	// Create the chunk's mesh if missing
+	if (!chunk->mesh.vao) {
+		mesh_t mesh = mesh_init();
+		GLsizei stride = sizeof(GLfloat) * 10;
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, 0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, sizeof(GLfloat) * 3);
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, stride, sizeof(GLfloat) * 6);
+		glBindVertexArray(0);
+	}
+
+	// Update the chunk's mesh
+	mesh_update(&chunk->mesh, item->vertices, item->faces * 4, item->indices, item->faces * 6);
     gen_sign_buffer(chunk);
 }
 
@@ -1198,7 +1209,7 @@ void init_chunk(Chunk *chunk, int p, int q) {
     chunk->q = q;
     chunk->faces = 0;
     chunk->sign_faces = 0;
-    chunk->buffer = 0;
+	chunk->mesh = (mesh_t){};
     chunk->sign_buffer = 0;
     dirty_chunk(chunk);
     SignList *signs = &chunk->signs;
@@ -1249,7 +1260,7 @@ void delete_chunks() {
             map_free(&chunk->map);
             map_free(&chunk->lights);
             sign_list_free(&chunk->signs);
-            del_buffer(chunk->buffer);
+			mesh_delete(&chunk->mesh);
             del_buffer(chunk->sign_buffer);
             Chunk *other = g->chunks + (--count);
             memcpy(chunk, other, sizeof(Chunk));
@@ -1264,7 +1275,7 @@ void delete_all_chunks() {
         map_free(&chunk->map);
         map_free(&chunk->lights);
         sign_list_free(&chunk->signs);
-        del_buffer(chunk->buffer);
+		mesh_delete(&chunk->mesh);
         del_buffer(chunk->sign_buffer);
     }
     g->chunk_count = 0;
@@ -1320,9 +1331,8 @@ void force_chunks(Player *player) {
             int b = q + dq;
             Chunk *chunk = find_chunk(a, b);
             if (chunk) {
-                if (chunk->dirty) {
+                if (chunk->dirty)
                     gen_chunk_buffer(chunk);
-                }
             }
             else if (g->chunk_count < MAX_CHUNKS) {
                 chunk = g->chunks + g->chunk_count++;
@@ -1363,9 +1373,8 @@ void ensure_chunks_worker(Player *player, Worker *worker) {
             int distance = MAX(ABS(dp), ABS(dq));
             int invisible = !chunk_visible(planes, a, b, 0, 256);
             int priority = 0;
-            if (chunk) {
-                priority = chunk->buffer && chunk->dirty;
-            }
+            if (chunk)
+                priority = chunk->mesh.vao && chunk->dirty;
             int score = (invisible << 24) | (priority << 16) | distance;
             if (score < best_score) {
                 best_score = score;

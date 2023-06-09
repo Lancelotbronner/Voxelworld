@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <lodepng.h>
 #include <cglm/cglm.h>
+#include "mesh.h"
 #include "utils.h"
 
 int rand_int(int n) {
