@@ -68,9 +68,7 @@ typedef struct {
     Map *light_maps[3][3];
     int miny;
     int maxy;
-	GLsizei faces;
-	struct vertex_s *vertices;
-    GLushort *indices;
+	geometry_t geometry;
 } WorkerItem;
 
 typedef struct {
@@ -143,6 +141,9 @@ typedef struct {
     int observe2;
     int flying;
     int item_index;
+	int last_item_index;
+	geometry_t item_geometry;
+	mesh_t item_mesh;
     int scale;
     int ortho;
     float fov;
@@ -259,29 +260,6 @@ GLuint gen_sky_buffer() {
     float data[12288];
     make_sphere(data, 1, 3);
     return gen_buffer(sizeof(data), data);
-}
-
-GLuint gen_cube_buffer(float x, float y, float z, float n, int w) {
-    GLfloat *data = malloc_faces(10, 6);
-    float ao[6][4] = {0};
-    float light[6][4] = {
-        {0.5, 0.5, 0.5, 0.5},
-        {0.5, 0.5, 0.5, 0.5},
-        {0.5, 0.5, 0.5, 0.5},
-        {0.5, 0.5, 0.5, 0.5},
-        {0.5, 0.5, 0.5, 0.5},
-        {0.5, 0.5, 0.5, 0.5}
-    };
-    make_cube(data, ao, light, 1, 1, 1, 1, 1, 1, x, y, z, n, w);
-    return gen_faces(10, 6, data);
-}
-
-GLuint gen_plant_buffer(float x, float y, float z, float n, int w) {
-    GLfloat *data = malloc_faces(10, 4);
-    float ao = 0;
-    float light = 1;
-    make_plant(data, ao, light, x, y, z, n, w, 45);
-    return gen_faces(10, 4, data);
 }
 
 GLuint gen_player_buffer(float x, float y, float z, float rx, float ry) {
@@ -1035,8 +1013,8 @@ void compute_chunk(WorkerItem *item) {
     int miny = 256;
     int maxy = 0;
     int faces = 0;
-    MAP_FOR_EACH(map, ex, ey, ez, ew) {
-        if (ew <= 0) {
+    MAP_FOR_EACH(map, ex, ey, ez, id) {
+        if (id <= 0) {
             continue;
         }
         int x = ex - ox;
@@ -1052,7 +1030,7 @@ void compute_chunk(WorkerItem *item) {
         if (total == 0) {
             continue;
         }
-        if (is_plant(ew)) {
+        if (is_plant(id)) {
             total = 4;
         }
         miny = MIN(miny, ey);
@@ -1061,11 +1039,10 @@ void compute_chunk(WorkerItem *item) {
     } END_MAP_FOR_EACH;
 
     // generate geometry
-	GLushort *indices = malloc(sizeof(GLushort) * 6 * faces);
-	struct vertex_s *vertices = malloc(sizeof(struct vertex_s) * 4 * faces);
+	geometry_t geometry = geometry_init(faces);
     int offset = 0;
-    MAP_FOR_EACH(map, ex, ey, ez, ew) {
-        if (ew <= 0) {
+    MAP_FOR_EACH(map, ex, ey, ez, id) {
+        if (id <= 0) {
             continue;
         }
         int x = ex - ox;
@@ -1106,7 +1083,7 @@ void compute_chunk(WorkerItem *item) {
         float ao[6][4];
         float light[6][4];
         occlusion(neighbors, lights, shades, ao, light);
-        if (is_plant(ew)) {
+        if (is_plant(id)) {
             total = 4;
             float min_ao = 1;
             float max_light = 0;
@@ -1117,10 +1094,11 @@ void compute_chunk(WorkerItem *item) {
                 }
             }
             float rotation = simplex2(ex, ez, 4, 0.5, 2) * 360;
-            make_plant(offset * 6, indices + offset * 6, vertices + offset * 4, min_ao, max_light, ex, ey, ez, 0.5, ew, rotation);
+			generate_cross_geometry(geometry, id, min_ao, max_light, ex / 2, ey / 2, ez / 2, rotation);
         }
         else {
-            make_cube(offset * 6, indices + offset * 6, vertices + offset * 4, ao, light, f1, f2, f3, f4, f5, f6, ex, ey, ez, 0.5, ew);
+			int faces[6] = { f1, f2, f3, f4, f5, f6 };
+			generate_cube_geometry(geometry, id, ao, light, faces, ex / 2, ey / 2, ez / 2);
         }
         offset += total;
     } END_MAP_FOR_EACH;
@@ -1131,9 +1109,7 @@ void compute_chunk(WorkerItem *item) {
 
     item->miny = miny;
     item->maxy = maxy;
-    item->faces = faces;
-    item->indices = indices;
-	item->vertices = vertices;
+	item->geometry = geometry;
 }
 
 void generate_chunk(Chunk *chunk, WorkerItem *item) {
@@ -1154,7 +1130,7 @@ void generate_chunk(Chunk *chunk, WorkerItem *item) {
 	}
 
 	// Update the chunk's mesh
-	mesh_update(&chunk->mesh, item->vertices, item->faces * 4, item->indices, item->faces * 6);
+	geometry_upload_to(item->geometry, &chunk->mesh);
     gen_sign_buffer(chunk);
 }
 
@@ -1778,7 +1754,7 @@ void render_crosshairs(Attrib *attrib) {
     glDisable(GL_COLOR_LOGIC_OP);
 }
 
-void render_item(Attrib *attrib) {
+void uniforms_item(Attrib *attrib) {
     mat4 matrix;
     set_matrix_item(matrix, g->width, g->height, g->scale);
     glUseProgram(attrib->program);
@@ -1786,17 +1762,20 @@ void render_item(Attrib *attrib) {
     glUniform3f(attrib->camera, 0, 0, 5);
     glUniform1i(attrib->sampler, 0);
     glUniform1f(attrib->timer, time_of_day());
-    int w = items[g->item_index];
-    if (is_plant(w)) {
-        GLuint buffer = gen_plant_buffer(0, 0, 0, 0.5, w);
-        draw_plant(attrib, buffer);
-        del_buffer(buffer);
-    }
-    else {
-        GLuint buffer = gen_cube_buffer(0, 0, 0, 0.5, w);
-        draw_cube(attrib, buffer);
-        del_buffer(buffer);
-    }
+}
+
+void generate_item_geometry(geometry_t geometry, int id) {
+	if (is_plant(id))
+		generate_cross_geometry(geometry, id, 0, 1, 0, 0, 0, 45);
+	else {
+		float ao[6][4];
+		memset(ao, 0, 6 * 4);
+		float light[6][4];
+		memset(light, 1, 6 * 4);
+		int faces[6];
+		memset(faces, 1, 6);
+		generate_cube_geometry(geometry, id, ao, light, faces, 0, 0, 0);
+	}
 }
 
 void render_text(
@@ -2777,6 +2756,10 @@ int main(int argc, char **argv) {
         thrd_create(&worker->thrd, worker_run, worker);
     }
 
+	// INITIALIZE GLOBAL MEMORY
+	g->item_geometry = geometry_init(8);
+	g->item_mesh = mesh_init();
+
 	GLint error;
 	while (error = glGetError(), error != GL_NO_ERROR)
 		fprintf(stderr, "[OpenGL] error %d\n", error);
@@ -2907,11 +2890,16 @@ int main(int argc, char **argv) {
 
             // RENDER HUD //
             glClear(GL_DEPTH_BUFFER_BIT);
-            if (SHOW_CROSSHAIRS) {
-                render_crosshairs(&line_attrib);
-            }
+			if (SHOW_CROSSHAIRS) {
+				render_crosshairs(&line_attrib);
+			}
             if (SHOW_ITEM) {
-                render_item(&block_attrib);
+				if (g->item_index != g->last_item_index) {
+					generate_item_geometry(g->item_geometry, g->item_index);
+					g->last_item_index = g->item_index;
+				}
+				uniforms_item(&block_attrib);
+				mesh_draw(&g->item_mesh);
             }
 
             // RENDER TEXT //

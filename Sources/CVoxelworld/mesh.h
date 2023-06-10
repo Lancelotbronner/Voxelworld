@@ -27,7 +27,6 @@ void mesh_draw(const mesh_t *mesh);
 
 //MARK: - Vertex Management
 
-
 struct vertex_s {
 	float position[3];
 	float normal[3];
@@ -38,12 +37,21 @@ struct vertex_s {
 
 //MARK: - Geometry Management
 
-//TODO: Specialized geometry to make mesh-building simpler?
-
 typedef struct geometry_s *geometry_t;
 
-geometry_t geometry_init(size_t capacity);
+/// Initializes an empty geometry with the specified capacity.
+/// - Parameter capacity: The capacity in faces.
+geometry_t geometry_init(GLsizei capacity);
+
 void geometry_delete(geometry_t geometry);
+
+GLsizei geometry_size(geometry_t geometry);
+
+void geometry_upload(geometry_t geometry, GLuint vao, GLuint vbo, GLuint ebo);
+
+void geometry_upload_to(geometry_t geometry, mesh_t *mesh);
+
+// The following methods are specialized to the vertex structure above.
 
 void geometry_triangle(geometry_t geometry, unsigned short a, unsigned short b, unsigned short c);
 

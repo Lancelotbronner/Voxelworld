@@ -49,14 +49,14 @@ struct geometry_s {
 	struct vertex_s *vertex_buffer;
 	struct vertex_s vertex;
 	// Sizes are in faces
-	size_t size;
-	size_t capacity;
+	GLsizei size;
+	GLsizei capacity;
 	float du, dv;
 	float dx, dy, dz;
 	unsigned short di;
 };
 
-geometry_t geometry_init(size_t capacity) {
+geometry_t geometry_init(GLsizei capacity) {
 	geometry_t geometry = malloc(sizeof(struct geometry_s));
 	geometry->capacity = capacity;
 	geometry->index_buffer = malloc(sizeof(unsigned short) * capacity * 6);
@@ -64,6 +64,26 @@ geometry_t geometry_init(size_t capacity) {
 	geometry->vertex_buffer = malloc(sizeof(struct vertex_s) * capacity * 4);
 	geometry->vertices = geometry->vertex_buffer;
 	return geometry;
+}
+
+GLsizei geometry_size(geometry_t geometry) {
+	return geometry->size;
+}
+
+void geometry_upload(geometry_t geometry, GLuint vao, GLuint vbo, GLuint ebo) {
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBufferData(GL_ARRAY_BUFFER, geometry->size * 4, geometry->vertex_buffer, GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, geometry->size * 6, geometry->index_buffer, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+}
+
+void geometry_upload_to(geometry_t geometry, mesh_t *mesh) {
+	geometry_upload(geometry, mesh->vao, mesh->vbo, mesh->ebo);
+	mesh->size = geometry_size(geometry);
 }
 
 void geometry_delete(geometry_t geometry) {
