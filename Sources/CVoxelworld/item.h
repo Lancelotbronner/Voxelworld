@@ -58,7 +58,7 @@
 #define COLOR_31 63
 
 extern const int items[];
-extern const int item_count;
+extern const int number_of_items;
 extern const int blocks[256][6];
 extern const int plants[256];
 

@@ -2171,7 +2171,7 @@ void on_middle_click() {
     State *s = &g->players->state;
     int hx, hy, hz;
     int hw = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, &hx, &hy, &hz);
-    for (int i = 0; i < item_count; i++) {
+    for (int i = 0; i < number_of_items; i++) {
         if (items[i] == hw) {
             g->item_index = i;
             break;
@@ -2260,12 +2260,12 @@ void on_key(GLFWwindow *window, int key, int scancode, int action, int mods) {
             g->item_index = 9;
         }
         if (key == CRAFT_KEY_ITEM_NEXT) {
-            g->item_index = (g->item_index + 1) % item_count;
+            g->item_index = (g->item_index + 1) % number_of_items;
         }
         if (key == CRAFT_KEY_ITEM_PREV) {
             g->item_index--;
             if (g->item_index < 0) {
-                g->item_index = item_count - 1;
+                g->item_index = number_of_items - 1;
             }
         }
         if (key == CRAFT_KEY_OBSERVE) {
@@ -2314,13 +2314,13 @@ void on_scroll(GLFWwindow *window, double xdelta, double ydelta) {
     static double ypos = 0;
     ypos += ydelta;
     if (ypos < -SCROLL_THRESHOLD) {
-        g->item_index = (g->item_index + 1) % item_count;
+        g->item_index = (g->item_index + 1) % number_of_items;
         ypos = 0;
     }
     if (ypos > SCROLL_THRESHOLD) {
         g->item_index--;
         if (g->item_index < 0) {
-            g->item_index = item_count - 1;
+            g->item_index = number_of_items - 1;
         }
         ypos = 0;
     }

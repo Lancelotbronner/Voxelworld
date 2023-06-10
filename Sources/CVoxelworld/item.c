@@ -59,7 +59,7 @@ const int items[] = {
     COLOR_31
 };
 
-const int item_count = sizeof(items) / sizeof(int);
+const int number_of_items = sizeof(items) / sizeof(int);
 
 const int blocks[256][6] = {
     // w => (left, right, top, bottom, front, back) tiles
