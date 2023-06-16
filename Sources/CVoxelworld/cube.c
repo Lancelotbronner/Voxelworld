@@ -18,21 +18,44 @@ static inline void calculate_cube_uvs(int w, float *du, float *dv) {
 
 //MARK: - Cube Geometry
 
-void generate_cube_geometry(geometry_t geometry, int id, float ao[6][4], float light[6][4], int face[6], float x, float y, float z) {
-	const int *ids = blocks[id];
+void generate_cube_geometry(geometry_t geometry, int id[6], float ao[6][4], float light[6][4], int face[6], float x, float y, float z) {
 	float du, dv;
 
 	// Configure the geometry for the block
 	geometry_position_offset(geometry, x, y, z);
 
+	if (face[0]) {
+		calculate_cube_uvs(id[0], &du, &dv);
+		geometry_uvs_offset(geometry, du, dv);
+		generate_west_face(geometry, ao[0], light[0]);
+	}
+
+	if (face[1]) {
+		calculate_cube_uvs(id[1], &du, &dv);
+		geometry_uvs_offset(geometry, du, dv);
+		generate_east_face(geometry, ao[1], light[1]);
+	}
+
+	if (face[2]) {
+		calculate_cube_uvs(id[2], &du, &dv);
+		geometry_uvs_offset(geometry, du, dv);
+		generate_top_face(geometry, ao[2], light[2]);
+	}
+
+	if (face[3]) {
+		calculate_cube_uvs(id[3], &du, &dv);
+		geometry_uvs_offset(geometry, du, dv);
+		generate_bottom_face(geometry, ao[3], light[3]);
+	}
+
 	if (face[4]) {
-		calculate_cube_uvs(blocks[id][4], &du, &dv);
+		calculate_cube_uvs(id[4], &du, &dv);
 		geometry_uvs_offset(geometry, du, dv);
 		generate_north_face(geometry, ao[4], light[4]);
 	}
 
 	if (face[5]) {
-		calculate_cube_uvs(blocks[id][5], &du, &dv);
+		calculate_cube_uvs(id[5], &du, &dv);
 		geometry_uvs_offset(geometry, du, dv);
 		generate_south_face(geometry, ao[5], light[5]);
 	}
@@ -110,7 +133,149 @@ void generate_south_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_vertex(geometry);
 }
 
-//TODO: West, East, Bottom and Up sides
+void generate_west_face(geometry_t geometry, float ao[4], float light[4]) {
+	// Configure the geometry for the face
+	geometry_normals(geometry, 0, +1, 0);
+
+	// Insert the indices, flipping according to ambient occlusion
+	if (ao[0] + ao[3] > ao[1] + ao[2]) {
+		geometry_triangle(geometry, 0, 1, 2);
+		geometry_triangle(geometry, 1, 3, 2);
+	} else {
+		geometry_triangle(geometry, 0, 3, 2);
+		geometry_triangle(geometry, 0, 1, 3);
+	}
+
+	// Insert vertices
+
+	geometry_position(geometry, -1, +1, -1);
+	geometry_uvs(geometry, F, T);
+	geometry_lighting(geometry, ao[0], light[0]);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, -1, +1, +1);
+	geometry_uvs(geometry, F, F);
+	geometry_lighting(geometry, ao[1], light[1]);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, +1, +1, -1);
+	geometry_uvs(geometry, T, T);
+	geometry_lighting(geometry, ao[2], light[2]);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, +1, +1, +1);
+	geometry_uvs(geometry, T, F);
+	geometry_lighting(geometry, ao[3], light[3]);
+	geometry_vertex(geometry);
+}
+
+void generate_east_face(geometry_t geometry, float ao[4], float light[4]) {
+	// Configure the geometry for the face
+	geometry_normals(geometry, 0, -1, 0);
+
+	// Insert the indices, flipping according to ambient occlusion
+	if (ao[0] + ao[3] > ao[1] + ao[2]) {
+		geometry_triangle(geometry, 0, 2, 1);
+		geometry_triangle(geometry, 2, 3, 1);
+	} else {
+		geometry_triangle(geometry, 0, 3, 1);
+		geometry_triangle(geometry, 0, 2, 3);
+	}
+	
+	// Insert vertices
+
+	geometry_position(geometry, -1, -1, -1);
+	geometry_uvs(geometry, F, F);
+	geometry_lighting(geometry, ao[0], light[0]);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, -1, -1, +1);
+	geometry_uvs(geometry, F, T);
+	geometry_lighting(geometry, ao[1], light[1]);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, +1, -1, -1);
+	geometry_uvs(geometry, T, F);
+	geometry_lighting(geometry, ao[2], light[2]);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, +1, -1, +1);
+	geometry_uvs(geometry, T, T);
+	geometry_lighting(geometry, ao[3], light[3]);
+	geometry_vertex(geometry);
+}
+
+void generate_bottom_face(geometry_t geometry, float ao[4], float light[4]) {
+	// Configure the geometry for the face
+	geometry_normals(geometry, 0, 0, -1);
+
+	// Insert the indices, flipping according to ambient occlusion
+	if (ao[0] + ao[3] > ao[1] + ao[2]) {
+		geometry_triangle(geometry, 0, 1, 2);
+		geometry_triangle(geometry, 1, 3, 2);
+	} else {
+		geometry_triangle(geometry, 0, 3, 2);
+		geometry_triangle(geometry, 0, 1, 3);
+	}
+
+	// Insert vertices
+
+	geometry_position(geometry, -1, -1, -1);
+	geometry_uvs(geometry, F, F);
+	geometry_lighting(geometry, ao[0], light[0]);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, -1, +1, -1);
+	geometry_uvs(geometry, F, T);
+	geometry_lighting(geometry, ao[1], light[1]);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, +1, -1, -1);
+	geometry_uvs(geometry, T, F);
+	geometry_lighting(geometry, ao[2], light[2]);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, +1, +1, -1);
+	geometry_uvs(geometry, T, T);
+	geometry_lighting(geometry, ao[3], light[3]);
+	geometry_vertex(geometry);
+}
+
+void generate_top_face(geometry_t geometry, float ao[4], float light[4]) {
+	// Configure the geometry for the face
+	geometry_normals(geometry, 0, 0, +1);
+
+	// Insert the indices, flipping according to ambient occlusion
+	if (ao[0] + ao[3] > ao[1] + ao[2]) {
+		geometry_triangle(geometry, 0, 2, 1);
+		geometry_triangle(geometry, 2, 3, 1);
+	} else {
+		geometry_triangle(geometry, 0, 3, 1);
+		geometry_triangle(geometry, 0, 2, 3);
+	}
+
+	// Insert vertices
+
+	geometry_position(geometry, -1, -1, +1);
+	geometry_uvs(geometry, T, F);
+	geometry_lighting(geometry, ao[0], light[0]);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, -1, +1, +1);
+	geometry_uvs(geometry, T, T);
+	geometry_lighting(geometry, ao[1], light[1]);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, +1, -1, +1);
+	geometry_uvs(geometry, F, F);
+	geometry_lighting(geometry, ao[2], light[2]);
+	geometry_vertex(geometry);
+
+	geometry_position(geometry, +1, +1, +1);
+	geometry_uvs(geometry, F, T);
+	geometry_lighting(geometry, ao[3], light[3]);
+	geometry_vertex(geometry);
+}
 
 //MARK: - Cross Geometry
 
@@ -131,7 +296,7 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 	// Face #1
 
 	geometry_normals(geometry, -1, 0, 0);
-	geometry_normals_apply(geometry, rotate);
+	geometry_normal_apply(geometry, rotate);
 	geometry_triangle(geometry, 0, 3, 2);
 	geometry_triangle(geometry, 0, 1, 3);
 
@@ -154,7 +319,7 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 	// Face #2 (mirror of #1)
 
 	geometry_normals(geometry, +1, 0, 0);
-	geometry_normals_apply(geometry, rotate);
+	geometry_normal_apply(geometry, rotate);
 	geometry_triangle(geometry, 0, 3, 1);
 	geometry_triangle(geometry, 0, 2, 3);
 
@@ -177,6 +342,7 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 	// Face #3
 
 	geometry_normals(geometry, 0, 0, -1);
+	geometry_normal_apply(geometry, rotate);
 	geometry_triangle(geometry, 0, 3, 2);
 	geometry_triangle(geometry, 0, 1, 3);
 
@@ -186,7 +352,6 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 
 	geometry_position(geometry, -1, +1, 0);
 	geometry_uvs(geometry, 0, 1);
-	geometry_position_apply(geometry, rotate);
 	geometry_vertex(geometry);
 
 	geometry_position(geometry, +1, -1, 0);
@@ -200,7 +365,7 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 	// Face #4 (mirror of #3)
 
 	geometry_normals(geometry, 0, 0, +1);
-	geometry_normals_apply(geometry, rotate);
+	geometry_normal_apply(geometry, rotate);
 	geometry_triangle(geometry, 0, 3, 1);
 	geometry_triangle(geometry, 0, 2, 3);
 
@@ -221,211 +386,57 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 	geometry_vertex(geometry);
 }
 
-//MARK: - Legacy Geometries
+//MARK: - Character Geometry
 
-void make_cube_faces(size_t index, unsigned short *indices, struct vertex_s *vertices, float ao[6][4], float light[6][4], int left, int right, int top, int bottom, int front, int back, int wleft, int wright, int wtop, int wbottom, int wfront, int wback, float px, float py, float pz, float n) {
-
-	int faces[6] = { left, right, top, bottom, front, back };
-	int tiles[6] = { wleft, wright, wtop, wbottom, wfront, wback };
-	int i = -1;
-	int j = 0;
-
-	// Prepare the templates
-
-#define flipped \
-ao[i][0] + ao[i][3] > ao[i][1] + ao[i][2]
-
-#define triangle(t0, t1, t2) \
-*indices++ = index + t0; \
-*indices++ = index + t1; \
-*indices++ = index + t2; \
-index += 3;
-
-	vec4 normalv = GLM_VEC4_ZERO;
-#define normals(x, y, z) \
-normalv[0] = x; \
-normalv[1] = y; \
-normalv[2] = z
-
+void generate_player_geometry(geometry_t geometry, float x, float y, float z, float rx, float ry) {
 	float du, dv;
-#define uvs \
-du = tiles[i] % 16 * s; \
-dv = tiles[i] / 16 * s
 
-	float s = 0.0625;
-	float a = 1 / 2048.0;
-	float b = s - a;
-#define vertex(x, y, z, u, v) \
-*vertices++ = (struct vertex_s) { \
-.position = { n * x, n * y, n * z }, \
-.normal = { normalv[0], normalv[1], normalv[2] }, \
-.uv = { du + (u ? b : a), dv + (v ? b : a) }, \
-.ao = ao[i][j], \
-.light = light[i][j], \
-}; j++;
+	// Prepare the transforms and constants
+	mat4 transform = GLM_MAT4_IDENTITY;
+	glm_rotate(transform, rx, (vec3){ 0, 1, 0 });
+	glm_rotate(transform, -ry, (vec3){ cosf(rx), 0, sinf(rx) });
+	float ao[4] = { 0 };
+	float light[4] = { 0.8, 0.8, 0.8, 0.8};
 
-#define face \
-j = 0; \
-if (faces[++i] != 0)
+	// Configure the geometry context
+	geometry_position_offset(geometry, x * 0.4, y * 0.4, z * 0.4);
+	geometry_normal_enable(geometry, transform);
 
+	// West Face
+	calculate_cube_uvs(226, &du, &dv);
+	geometry_uvs_offset(geometry, du, dv);
+	generate_west_face(geometry, ao, light);
 
+	// East Face
+	calculate_cube_uvs(224, &du, &dv);
+	geometry_uvs_offset(geometry, du, dv);
+	generate_east_face(geometry, ao, light);
 
-	face {
-		uvs;
-		normals(-1, 0, 0);
+	// Top Face
+	calculate_cube_uvs(241, &du, &dv);
+	geometry_uvs_offset(geometry, du, dv);
+	generate_top_face(geometry, ao, light);
 
-		if (flipped) {
-			triangle(0, 1, 2);
-			triangle(1, 3, 2);
-		} else {
-			triangle(0, 3, 2);
-			triangle(0, 1, 3);
-		}
+	// Bottom Face
+	calculate_cube_uvs(209, &du, &dv);
+	geometry_uvs_offset(geometry, du, dv);
+	generate_bottom_face(geometry, ao, light);
 
-		vertex(-1, -1, -1, 0, 0);
-		vertex(-1, -1, +1, 1, 0);
-		vertex(-1, +1, -1, 0, 1);
-		vertex(-1, +1, +1, 1, 1);
-	}
+	// North Face
+	calculate_cube_uvs(225, &du, &dv);
+	geometry_uvs_offset(geometry, du, dv);
+	generate_north_face(geometry, ao, light);
 
-	face {
-		uvs;
-		normals(+1, 0, 0);
+	// South Face
+	calculate_cube_uvs(227, &du, &dv);
+	geometry_uvs_offset(geometry, du, dv);
+	generate_south_face(geometry, ao, light);
 
-		if (flipped) {
-			triangle(0, 2, 1);
-			triangle(2, 3, 1);
-		} else {
-			triangle(0, 3, 1);
-			triangle(0, 2, 3);
-		}
-
-		vertex(+1, -1, -1, 1, 0);
-		vertex(+1, -1, +1, 0, 0);
-		vertex(+1, +1, -1, 1, 1);
-		vertex(+1, +1, +1, 0, 1);
-	}
-
-	face {
-		uvs;
-		normals(0, +1, 0);
-
-		if (flipped) {
-			triangle(0, 1, 2);
-			triangle(1, 3, 2);
-		} else {
-			triangle(0, 3, 2);
-			triangle(0, 1, 3);
-		}
-
-		vertex(-1, +1, -1, 0, 1);
-		vertex(-1, +1, +1, 0, 0);
-		vertex(+1, +1, -1, 1, 1);
-		vertex(+1, +1, +1, 1, 0);
-	}
-
-	face {
-		uvs;
-		normals(0, -1, 0);
-
-		if (flipped) {
-			triangle(0, 2, 1);
-			triangle(2, 3, 1);
-		} else {
-			triangle(0, 3, 1);
-			triangle(0, 2, 3);
-		}
-
-		vertex(-1, -1, -1, 0, 0);
-		vertex(-1, -1, +1, 0, 1);
-		vertex(+1, -1, -1, 1, 0);
-		vertex(+1, -1, +1, 1, 1);
-	}
-
-	face {
-		uvs;
-		normals(0, 0, -1);
-
-		if (flipped) {
-			triangle(0, 1, 2);
-			triangle(1, 3, 2);
-		} else {
-			triangle(0, 3, 2);
-			triangle(0, 1, 3);
-		}
-
-		vertex(-1, -1, -1, 0, 0);
-		vertex(-1, +1, -1, 0, 1);
-		vertex(+1, -1, -1, 1, 0);
-		vertex(+1, +1, -1, 1, 1);
-	}
-
-	face {
-		uvs;
-		normals(0, 0, +1);
-
-		if (flipped) {
-			triangle(0, 2, 1);
-			triangle(2, 3, 1);
-		} else {
-			triangle(0, 3, 1);
-			triangle(0, 2, 3);
-		}
-
-		vertex(-1, -1, +1, 1, 0);
-		vertex(-1, +1, +1, 1, 1);
-		vertex(+1, -1, +1, 0, 0);
-		vertex(+1, +1, +1, 0, 1);
-	}
-
-#undef face
-#undef uvs
-#undef normals
-#undef triangle
-#undef flipped
-#undef vertex
+	// Cleanup the geometry context
+	geometry_normal_disable(geometry);
 }
 
-void make_cube(size_t index, unsigned short *indices, struct vertex_s *vertices, float ao[6][4], float light[6][4], int left, int right, int top, int bottom, int front, int back, float x, float y, float z, float n, int w) {
-	int wleft = blocks[w][0];
-	int wright = blocks[w][1];
-	int wtop = blocks[w][2];
-	int wbottom = blocks[w][3];
-	int wfront = blocks[w][4];
-	int wback = blocks[w][5];
-	make_cube_faces(
-					index, indices, vertices, ao, light,
-					left, right, top, bottom, front, back,
-					wleft, wright, wtop, wbottom, wfront, wback,
-					x, y, z, n);
-}
-
-void make_player(size_t index, unsigned short *indices, struct vertex_s *vertices, float x, float y, float z, float rx, float ry) {
-    float ao[6][4] = {0};
-    float light[6][4] = {
-        {0.8, 0.8, 0.8, 0.8},
-        {0.8, 0.8, 0.8, 0.8},
-        {0.8, 0.8, 0.8, 0.8},
-        {0.8, 0.8, 0.8, 0.8},
-        {0.8, 0.8, 0.8, 0.8},
-        {0.8, 0.8, 0.8, 0.8}
-    };
-    make_cube_faces(
-        index, indices, vertices, ao, light,
-        1, 1, 1, 1, 1, 1,
-        226, 224, 241, 209, 225, 227,
-        0, 0, 0, 0.4);
-	mat4 ma = GLM_MAT4_IDENTITY;
-	mat4 mb = GLM_MAT4_IDENTITY;
-	glm_rotate_y(mb, rx, mb);
-	glm_mul(mb, ma, ma);
-	glm_rotate(mb, -ry, (vec3){ cosf(rx), 0, sinf(rx) });
-	glm_mul(mb, ma, ma);
-    mat_apply(data, ma, 36, 3, 10);
-	glm_translate(mb, (vec3){ x, y, z });
-	glm_mul(mb, ma, ma);
-    mat_apply(data, ma, 36, 0, 10);
-}
+//MARK: - Legacy Geometries
 
 void make_cube_wireframe(float *data, float x, float y, float z, float n) {
     static const float positions[8][3] = {

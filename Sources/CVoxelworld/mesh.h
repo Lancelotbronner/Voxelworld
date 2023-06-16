@@ -55,8 +55,14 @@ void geometry_upload_to(geometry_t geometry, mesh_t *mesh);
 
 void geometry_triangle(geometry_t geometry, unsigned short a, unsigned short b, unsigned short c);
 
-/// Applies the given transform to the current vertex's normals
-void geometry_normals_apply(geometry_t geometry, mat4 transform);
+/// Applies the given transformation to the current vertex's normals
+void geometry_normal_apply(geometry_t geometry, mat4 transform);
+
+/// Enables the given transform to futur vertex normals
+void geometry_normal_enable(geometry_t geometry, mat4 transform);
+
+/// Disables the current normals transformation
+void geometry_normal_disable(geometry_t geometry);
 
 /// Applies the given transform to the current vertex's position
 void geometry_position_apply(geometry_t geometry, mat4 transform);

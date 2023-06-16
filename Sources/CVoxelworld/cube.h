@@ -2,8 +2,6 @@
 
 #include "mesh.h"
 
-void make_player(size_t index, unsigned short *indices, struct vertex_s *vertices, float x, float y, float z, float rx, float ry);
-
 void make_cube_wireframe(
     float *data, float x, float y, float z, float n);
 
@@ -40,14 +38,14 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 ///
 /// - Parameters:
 ///   - geometry: The geometry to populate, must have at least 6 faces of headroom.
-///   - id: The identifier of the block.
+///   - id: The texture index per face.
 ///   - aos: The ambient occlusion per vertex per face.
 ///   - lights: The light levels per vertex per face.
 ///   - faces: The faces which should be generated.
 ///   - x: The x position of the block.
 ///   - y: The y position of the block.
 ///   - z: The z position of the block.
-void generate_cube_geometry(geometry_t geometry, int id, float aos[6][4], float lights[6][4], int faces[6], float x, float y, float z);
+void generate_cube_geometry(geometry_t geometry, int id[6], float aos[6][4], float lights[6][4], int faces[6], float x, float y, float z);
 
 /// Generates the bottom geometry of a cube.
 ///
@@ -108,3 +106,15 @@ void generate_south_face(geometry_t geometry, float ao[4], float light[4]);
 ///   - ao: The ambient occlusion of the face's vertices.
 ///   - light: The light level of the face's vertices.
 void generate_north_face(geometry_t geometry, float ao[4], float light[4]);
+
+//MARK: - Player Geometry
+
+/// Generates the geometry of a player
+/// - Parameters:
+///   - geometry: The geometry to populate, must have space for 6 faces.
+///   - x: The x position of the player
+///   - y: The y position of the player
+///   - z: The z position of the player
+///   - rx: The x rotation of the player
+///   - ry: The y rotation of the player
+void generate_player_geometry(geometry_t geometry, float x, float y, float z, float rx, float ry);

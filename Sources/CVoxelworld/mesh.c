@@ -47,6 +47,8 @@ struct geometry_s {
 	struct vertex_s *vertices;
 	unsigned short *index_buffer;
 	struct vertex_s *vertex_buffer;
+	mat4 position_modifier;
+	mat4 normal_modifier;
 	struct vertex_s vertex;
 	// Sizes are in faces
 	GLsizei size;
@@ -54,6 +56,8 @@ struct geometry_s {
 	float du, dv;
 	float dx, dy, dz;
 	unsigned short di;
+	bool position_modifier_enabled;
+	bool normal_modifier_enabled;
 };
 
 geometry_t geometry_init(GLsizei capacity) {
@@ -96,7 +100,16 @@ void geometry_normals_apply(geometry_t geometry, mat4 transform) {
 	glm_mat4_mulv3(transform, geometry->vertex.normal, 0, geometry->vertex.normal);
 }
 
-void geometry_position_apply(geometry_t geometry,mat4 transform) {
+void geometry_normals_enable(geometry_t geometry, mat4 transform) {
+	glm_mat4_copy(transform, geometry->normal_modifier);
+	geometry->normal_modifier_enabled = true;
+}
+
+void geometry_normals_disable(geometry_t geometry) {
+	geometry->normal_modifier_enabled = false;
+}
+
+void geometry_position_apply(geometry_t geometry, mat4 transform) {
 	glm_mat4_mulv3(transform, geometry->vertex.position, 0, geometry->vertex.position);
 }
 
@@ -121,6 +134,8 @@ void geometry_normals(geometry_t geometry, float x, float y, float z) {
 	geometry->vertex.normal[0] = x;
 	geometry->vertex.normal[1] = y;
 	geometry->vertex.normal[2] = z;
+	if (geometry->normal_modifier_enabled)
+		glm_mat4_mulv3(geometry->normal_modifier, geometry->vertex.normal, 0, geometry->vertex.normal);
 }
 
 void geometry_uvs(geometry_t geometry, float u, float v) {
