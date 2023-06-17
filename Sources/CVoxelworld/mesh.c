@@ -46,6 +46,7 @@ void mesh_draw(const mesh_t *mesh) {
 		return;
 	glBindVertexArray(mesh->vao);
 	glDrawElements(GL_TRIANGLES, mesh->size, GL_UNSIGNED_SHORT, 0);
+	glBindVertexArray(0);
 }
 
 //MARK: - Geometry Management
@@ -123,6 +124,15 @@ void geometry_position_apply(geometry_t geometry, mat4 transform) {
 	glm_mat4_mulv3(transform, geometry->vertex.position, 0, geometry->vertex.position);
 }
 
+void geometry_position_enable(geometry_t geometry, mat4 transform) {
+	glm_mat4_copy(transform, geometry->position_modifier);
+	geometry->position_modifier_enabled = true;
+}
+
+void geometry_position_disable(geometry_t geometry) {
+	geometry->position_modifier_enabled = false;
+}
+
 void geometry_uvs_offset(geometry_t geometry, float du, float dv) {
 	geometry->du = du;
 	geometry->dv = dv;
@@ -135,9 +145,14 @@ void geometry_position_offset(geometry_t geometry, float dx, float dy, float dz)
 }
 
 void geometry_position(geometry_t geometry, float x, float y, float z) {
-	geometry->vertex.position[0] = geometry->dx + x / 2;
-	geometry->vertex.position[1] = geometry->dy + y / 2;
-	geometry->vertex.position[2] = geometry->dz + z / 2;
+	geometry->vertex.position[0] = x / 2;
+	geometry->vertex.position[1] = y / 2;
+	geometry->vertex.position[2] = z / 2;
+	if (geometry->position_modifier_enabled)
+		glm_mat4_mulv3(geometry->position_modifier, geometry->vertex.position, 0, geometry->vertex.position);
+	geometry->vertex.position[0] += geometry->dx;
+	geometry->vertex.position[1] += geometry->dy;
+	geometry->vertex.position[2] += geometry->dz;
 }
 
 void geometry_normals(geometry_t geometry, float x, float y, float z) {

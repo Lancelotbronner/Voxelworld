@@ -67,6 +67,12 @@ void geometry_normal_disable(geometry_t geometry);
 /// Applies the given transform to the current vertex's position
 void geometry_position_apply(geometry_t geometry, mat4 transform);
 
+/// Enables the given transform to futur vertex positions
+void geometry_position_enable(geometry_t geometry, mat4 transform);
+
+/// Disables the current position transformation
+void geometry_position_disable(geometry_t geometry);
+
 /// Applies the given offset to futur UVs
 void geometry_uvs_offset(geometry_t geometry, float du, float dv);
 

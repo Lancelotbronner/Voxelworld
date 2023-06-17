@@ -1067,8 +1067,10 @@ void compute_chunk(WorkerItem *item) {
                     max_light = MAX(max_light, light[a][b]);
                 }
             }
-            float rotation = simplex2(ex, ez, 4, 0.5, 2) * 360;
-			generate_cross_geometry(geometry, id, min_ao, max_light, ex, ey, ez, rotation);
+            float rotation = snoise2(ex, ez) * 180;
+			float xoffset = snoise2(ex, ez) / 3;
+			float zoffset = snoise2(ex, ez) / 3;
+			generate_cross_geometry(geometry, id, min_ao, max_light, ex + xoffset, ey, ez + zoffset, rotation);
         } else {
 			int faces[6] = { f1, f2, f3, f4, f5, f6 };
 			generate_cube_geometry(geometry, (int*)blocks[id], ao, light, faces, ex, ey, ez);
@@ -1737,7 +1739,7 @@ void uniforms_item(Attrib *attrib) {
     glUniformMatrix4fv(attrib->matrix, 1, GL_FALSE, (float*)matrix);
     glUniform3f(attrib->camera, 0, 0, 5);
     glUniform1i(attrib->sampler, 0);
-    glUniform1f(attrib->timer, 1);
+    glUniform1f(attrib->timer, time_of_day());
 }
 
 void generate_item_geometry(geometry_t geometry, int id) {
@@ -2853,21 +2855,23 @@ int main(int argc, char **argv) {
             // RENDER 3-D SCENE //
             glClear(GL_COLOR_BUFFER_BIT);
             glClear(GL_DEPTH_BUFFER_BIT);
+			//TODO: Fix the sky's ungodly horrors
 //            render_sky(&sky_attrib, player, sky_buffer);
             glClear(GL_DEPTH_BUFFER_BIT);
             int face_count = render_chunks(&block_attrib, player);
-            render_signs(&text_attrib, player);
-            render_sign(&text_attrib, player);
+			//TODO: Fix the sign's 0x501 error
+//            render_signs(&text_attrib, player);
+//            render_sign(&text_attrib, player);
             render_players(&block_attrib, player);
-            if (SHOW_WIREFRAME) {
+            if (SHOW_WIREFRAME)
                 render_wireframe(&line_attrib, player);
-            }
 
             // RENDER HUD //
             glClear(GL_DEPTH_BUFFER_BIT);
-			if (SHOW_CROSSHAIRS) {
-				render_crosshairs(&line_attrib);
-			}
+			//TODO: Fixed the crosshair's 0x501 error
+//			if (SHOW_CROSSHAIRS)
+//				render_crosshairs(&line_attrib);
+
             if (SHOW_ITEM) {
 				if (g->item_index != g->last_item_index) {
 					generate_item_geometry(g->item_geometry, g->item_index);
@@ -2879,6 +2883,7 @@ int main(int argc, char **argv) {
             }
 
             // RENDER TEXT //
+			// TODO: Fix the text not showing
             char text_buffer[1024];
             float ts = 12 * g->scale;
             float tx = ts / 2;

@@ -294,11 +294,11 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 	// Prepare normals rotation
 	mat4 rotate = GLM_MAT4_IDENTITY;
 	glm_rotate_y(rotate, RADIANS(rotation), rotate);
+	geometry_position_enable(geometry, rotate);
 
 	// Face #1
 
 	geometry_normals(geometry, -1, 0, 0);
-	geometry_normal_apply(geometry, rotate);
 	geometry_triangle(geometry, 0, 3, 2);
 	geometry_triangle(geometry, 0, 1, 3);
 
@@ -321,7 +321,6 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 	// Face #2 (mirror of #1)
 
 	geometry_normals(geometry, +1, 0, 0);
-	geometry_normal_apply(geometry, rotate);
 	geometry_triangle(geometry, 0, 3, 1);
 	geometry_triangle(geometry, 0, 2, 3);
 
@@ -344,7 +343,6 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 	// Face #3
 
 	geometry_normals(geometry, 0, 0, -1);
-	geometry_normal_apply(geometry, rotate);
 	geometry_triangle(geometry, 0, 3, 2);
 	geometry_triangle(geometry, 0, 1, 3);
 
@@ -367,7 +365,6 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 	// Face #4 (mirror of #3)
 
 	geometry_normals(geometry, 0, 0, +1);
-	geometry_normal_apply(geometry, rotate);
 	geometry_triangle(geometry, 0, 3, 1);
 	geometry_triangle(geometry, 0, 2, 3);
 
@@ -386,6 +383,9 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 	geometry_position(geometry, +1, +1, 0);
 	geometry_uvs(geometry, 0, 1);
 	geometry_vertex(geometry);
+
+	// cleanup
+	geometry_position_disable(geometry);
 }
 
 //MARK: - Character Geometry
