@@ -201,7 +201,7 @@ void generate_east_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_lighting(geometry, ao[2], light[2]);
 	geometry_vertex(geometry);
 
-	geometry_position(geometry, -1, +1, +1);
+	geometry_position(geometry, +1, +1, +1);
 	geometry_uvs(geometry, F, T);
 	geometry_lighting(geometry, ao[3], light[3]);
 	geometry_vertex(geometry);
@@ -213,11 +213,11 @@ void generate_bottom_face(geometry_t geometry, float ao[4], float light[4]) {
 
 	// Insert the indices, flipping according to ambient occlusion
 	if (ao[0] + ao[3] > ao[1] + ao[2]) {
-		geometry_triangle(geometry, 0, 1, 2);
-		geometry_triangle(geometry, 1, 3, 2);
+		geometry_triangle(geometry, 0, 2, 1);
+		geometry_triangle(geometry, 2, 3, 1);
 	} else {
-		geometry_triangle(geometry, 0, 3, 2);
-		geometry_triangle(geometry, 0, 1, 3);
+		geometry_triangle(geometry, 0, 3, 1);
+		geometry_triangle(geometry, 0, 2, 3);
 	}
 
 	// Insert vertices
@@ -227,7 +227,7 @@ void generate_bottom_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_lighting(geometry, ao[0], light[0]);
 	geometry_vertex(geometry);
 
-	geometry_position(geometry, -1, +1, -1);
+	geometry_position(geometry, -1, -1, +1);
 	geometry_uvs(geometry, F, T);
 	geometry_lighting(geometry, ao[1], light[1]);
 	geometry_vertex(geometry);
@@ -237,7 +237,7 @@ void generate_bottom_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_lighting(geometry, ao[2], light[2]);
 	geometry_vertex(geometry);
 
-	geometry_position(geometry, +1, +1, -1);
+	geometry_position(geometry, +1, -1, +1);
 	geometry_uvs(geometry, T, T);
 	geometry_lighting(geometry, ao[3], light[3]);
 	geometry_vertex(geometry);

@@ -2844,8 +2844,8 @@ int main(int argc, char **argv) {
             g->observe1 = g->observe1 % g->player_count;
             g->observe2 = g->observe2 % g->player_count;
             delete_chunks();
-//			generate_player_geometry(me->geometry, s->x, s->y, s->z, s->rx, s->ry);
-//			geometry_upload_to(me->geometry, &me->mesh);
+			generate_player_geometry(me->geometry, s->x, s->y, s->z, s->rx, s->ry);
+			geometry_upload_to(me->geometry, &me->mesh);
             for (int i = 1; i < g->player_count; i++)
                 interpolate_player(g->players + i);
             Player *player = g->players + g->observe1;
@@ -2856,17 +2856,17 @@ int main(int argc, char **argv) {
 //            render_sky(&sky_attrib, player, sky_buffer);
             glClear(GL_DEPTH_BUFFER_BIT);
             int face_count = render_chunks(&block_attrib, player);
-//            render_signs(&text_attrib, player);
-//            render_sign(&text_attrib, player);
-//            render_players(&block_attrib, player);
+            render_signs(&text_attrib, player);
+            render_sign(&text_attrib, player);
+            render_players(&block_attrib, player);
             if (SHOW_WIREFRAME) {
-//                render_wireframe(&line_attrib, player);
+                render_wireframe(&line_attrib, player);
             }
 
             // RENDER HUD //
             glClear(GL_DEPTH_BUFFER_BIT);
 			if (SHOW_CROSSHAIRS) {
-//				render_crosshairs(&line_attrib);
+				render_crosshairs(&line_attrib);
 			}
             if (SHOW_ITEM) {
 				if (g->item_index != g->last_item_index) {
@@ -2875,7 +2875,7 @@ int main(int argc, char **argv) {
 					g->last_item_index = g->item_index;
 				}
 				uniforms_item(&block_attrib);
-//				mesh_draw(&g->item_mesh);
+				mesh_draw(&g->item_mesh);
             }
 
             // RENDER TEXT //
