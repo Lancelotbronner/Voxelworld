@@ -1068,11 +1068,11 @@ void compute_chunk(WorkerItem *item) {
                 }
             }
             float rotation = simplex2(ex, ez, 4, 0.5, 2) * 360;
-			generate_cross_geometry(geometry, id, min_ao, max_light, ex / 2, ey / 2, ez / 2, rotation);
+			generate_cross_geometry(geometry, id, min_ao, max_light, ex, ey, ez, rotation);
         }
         else {
 			int faces[6] = { f1, f2, f3, f4, f5, f6 };
-//			generate_cube_geometry(geometry, (int*)blocks[id], ao, light, faces, ex / 2, ey / 2, ez / 2);
+//			generate_cube_geometry(geometry, (int*)blocks[id], ao, light, faces, ex, ey, ez);
         }
         offset += total;
     } END_MAP_FOR_EACH;
@@ -2846,7 +2846,7 @@ int main(int argc, char **argv) {
             g->observe2 = g->observe2 % g->player_count;
             delete_chunks();
 //			generate_player_geometry(me->geometry, s->x, s->y, s->z, s->rx, s->ry);
-			geometry_upload_to(me->geometry, &me->mesh);
+//			geometry_upload_to(me->geometry, &me->mesh);
             for (int i = 1; i < g->player_count; i++)
                 interpolate_player(g->players + i);
             Player *player = g->players + g->observe1;
@@ -2856,8 +2856,7 @@ int main(int argc, char **argv) {
             glClear(GL_DEPTH_BUFFER_BIT);
 //            render_sky(&sky_attrib, player, sky_buffer);
             glClear(GL_DEPTH_BUFFER_BIT);
-//            int face_count = render_chunks(&block_attrib, player);
-			int face_count = 0;
+            int face_count = render_chunks(&block_attrib, player);
 //            render_signs(&text_attrib, player);
 //            render_sign(&text_attrib, player);
 //            render_players(&block_attrib, player);
@@ -2877,7 +2876,7 @@ int main(int argc, char **argv) {
 					g->last_item_index = g->item_index;
 				}
 				uniforms_item(&block_attrib);
-				mesh_draw(&g->item_mesh);
+//				mesh_draw(&g->item_mesh);
             }
 
             // RENDER TEXT //

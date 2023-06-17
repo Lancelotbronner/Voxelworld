@@ -26,41 +26,41 @@ void generate_cube_geometry(geometry_t geometry, int id[6], float ao[6][4], floa
 	// Configure the geometry for the block
 	geometry_position_offset(geometry, x, y, z);
 
-	if (face[0]) {
-		calculate_uvs(id[0], &du, &dv);
-		geometry_uvs_offset(geometry, du, dv);
-		generate_west_face(geometry, ao[0], light[0]);
-	}
-
-	if (face[1]) {
-		calculate_uvs(id[1], &du, &dv);
-		geometry_uvs_offset(geometry, du, dv);
-		generate_east_face(geometry, ao[1], light[1]);
-	}
-
-	if (face[2]) {
-		calculate_uvs(id[2], &du, &dv);
-		geometry_uvs_offset(geometry, du, dv);
-		generate_top_face(geometry, ao[2], light[2]);
-	}
-
-	if (face[3]) {
-		calculate_uvs(id[3], &du, &dv);
-		geometry_uvs_offset(geometry, du, dv);
-		generate_bottom_face(geometry, ao[3], light[3]);
-	}
-
-	if (face[4]) {
-		calculate_uvs(id[4], &du, &dv);
-		geometry_uvs_offset(geometry, du, dv);
-		generate_north_face(geometry, ao[4], light[4]);
-	}
-
-	if (face[5]) {
-		calculate_uvs(id[5], &du, &dv);
-		geometry_uvs_offset(geometry, du, dv);
-		generate_south_face(geometry, ao[5], light[5]);
-	}
+//	if (face[0]) {
+//		calculate_uvs(id[0], &du, &dv);
+//		geometry_uvs_offset(geometry, du, dv);
+//		generate_west_face(geometry, ao[0], light[0]);
+//	}
+//
+//	if (face[1]) {
+//		calculate_uvs(id[1], &du, &dv);
+//		geometry_uvs_offset(geometry, du, dv);
+//		generate_east_face(geometry, ao[1], light[1]);
+//	}
+//
+//	if (face[2]) {
+//		calculate_uvs(id[2], &du, &dv);
+//		geometry_uvs_offset(geometry, du, dv);
+//		generate_top_face(geometry, ao[2], light[2]);
+//	}
+//
+//	if (face[3]) {
+//		calculate_uvs(id[3], &du, &dv);
+//		geometry_uvs_offset(geometry, du, dv);
+//		generate_bottom_face(geometry, ao[3], light[3]);
+//	}
+//
+//	if (face[4]) {
+//		calculate_uvs(id[4], &du, &dv);
+//		geometry_uvs_offset(geometry, du, dv);
+//		generate_north_face(geometry, ao[4], light[4]);
+//	}
+//
+//	if (face[5]) {
+//		calculate_uvs(id[5], &du, &dv);
+//		geometry_uvs_offset(geometry, du, dv);
+//		generate_south_face(geometry, ao[5], light[5]);
+//	}
 }
 
 void generate_north_face(geometry_t geometry, float ao[4], float light[4]) {

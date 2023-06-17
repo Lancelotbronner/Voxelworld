@@ -135,9 +135,9 @@ void geometry_position_offset(geometry_t geometry, float dx, float dy, float dz)
 }
 
 void geometry_position(geometry_t geometry, float x, float y, float z) {
-	geometry->vertex.position[0] = geometry->dx + x;
-	geometry->vertex.position[1] = geometry->dy + y;
-	geometry->vertex.position[2] = geometry->dz + z;
+	geometry->vertex.position[0] = geometry->dx + x / 2;
+	geometry->vertex.position[1] = geometry->dy + y / 2;
+	geometry->vertex.position[2] = geometry->dz + z / 2;
 }
 
 void geometry_normals(geometry_t geometry, float x, float y, float z) {
