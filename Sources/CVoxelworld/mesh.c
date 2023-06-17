@@ -45,7 +45,7 @@ void mesh_draw(const mesh_t *mesh) {
 	if (!mesh->vao)
 		return;
 	glBindVertexArray(mesh->vao);
-	glDrawArrays(GL_TRIANGLES, 0, mesh->size);
+	glDrawElements(GL_TRIANGLES, mesh->size, GL_UNSIGNED_SHORT, 0);
 }
 
 //MARK: - Geometry Management
@@ -78,12 +78,12 @@ geometry_t geometry_init(GLsizei capacity) {
 
 void geometry_upload(geometry_t geometry, GLuint vbo, GLuint ebo, GLsizei *size) {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	GLsizeiptr vertices = geometry->vertices - geometry->vertex_buffer;
+	size_t vertices = geometry->vertices - geometry->vertex_buffer;
 	glBufferData(GL_ARRAY_BUFFER, vertices * sizeof(struct vertex_s), geometry->vertex_buffer, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	GLsizeiptr indices = geometry->indices - geometry->index_buffer;
+	size_t indices = geometry->indices - geometry->index_buffer;
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices * sizeof(unsigned short), geometry->index_buffer, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 

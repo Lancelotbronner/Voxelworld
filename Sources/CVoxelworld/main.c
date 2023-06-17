@@ -1069,10 +1069,9 @@ void compute_chunk(WorkerItem *item) {
             }
             float rotation = simplex2(ex, ez, 4, 0.5, 2) * 360;
 			generate_cross_geometry(geometry, id, min_ao, max_light, ex, ey, ez, rotation);
-        }
-        else {
+        } else {
 			int faces[6] = { f1, f2, f3, f4, f5, f6 };
-//			generate_cube_geometry(geometry, (int*)blocks[id], ao, light, faces, ex, ey, ez);
+			generate_cube_geometry(geometry, (int*)blocks[id], ao, light, faces, ex, ey, ez);
         }
         offset += total;
     } END_MAP_FOR_EACH;

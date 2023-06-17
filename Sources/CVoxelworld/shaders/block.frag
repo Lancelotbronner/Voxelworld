@@ -19,13 +19,16 @@ const float pi = 3.14159265;
 
 void main() {
     vec3 color = vec3(texture(sampler, fragment_uv));
-    if (color == vec3(1.0, 0.0, 1.0)) {
+
+	// discard magenta pixels
+    if (color == vec3(1.0, 0.0, 1.0))
         discard;
-    }
+
+	// special case clouds on orthographic projection
     bool cloud = color == vec3(1.0, 1.0, 1.0);
-    if (cloud && bool(ortho)) {
+    if (cloud && bool(ortho))
         discard;
-    }
+
     float df = cloud ? 1.0 - diffuse * 0.2 : diffuse;
     float ao = cloud ? 1.0 - (1.0 - fragment_ao) * 0.2 : fragment_ao;
     ao = min(1.0, ao + fragment_light);
