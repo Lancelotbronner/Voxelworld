@@ -5,9 +5,9 @@ uniform vec3 camera;
 uniform float fog_distance;
 uniform int ortho;
 
-in vec4 position;
-in vec3 normal;
-in vec4 uv;
+layout(location=0) in vec4 position;
+layout(location=1) in vec3 normal;
+layout(location=2) in vec4 uv;
 
 out vec2 fragment_uv;
 out float fragment_ao;

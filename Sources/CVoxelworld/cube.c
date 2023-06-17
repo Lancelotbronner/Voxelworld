@@ -7,11 +7,13 @@
 
 //MARK: - Utilities
 
-static const float S = 0.0625;
-static const float F = 1.0 / 2048.0;
-static const float T = S - F;
+static const float S = 1.0 / 16.0;
+//static const float F = 1.0 / 2048.0;
+//static const float T = S - F;
+static const float F = 0; // 1.0 / 2048.0;
+static const float T = 1; // S - F;
 
-static inline void calculate_cube_uvs(int w, float *du, float *dv) {
+static inline void calculate_uvs(int w, float *du, float *dv) {
 	*du = w % 16 * S;
 	*dv = w / 16 * S;
 }
@@ -25,37 +27,37 @@ void generate_cube_geometry(geometry_t geometry, int id[6], float ao[6][4], floa
 	geometry_position_offset(geometry, x, y, z);
 
 	if (face[0]) {
-		calculate_cube_uvs(id[0], &du, &dv);
+		calculate_uvs(id[0], &du, &dv);
 		geometry_uvs_offset(geometry, du, dv);
 		generate_west_face(geometry, ao[0], light[0]);
 	}
 
 	if (face[1]) {
-		calculate_cube_uvs(id[1], &du, &dv);
+		calculate_uvs(id[1], &du, &dv);
 		geometry_uvs_offset(geometry, du, dv);
 		generate_east_face(geometry, ao[1], light[1]);
 	}
 
 	if (face[2]) {
-		calculate_cube_uvs(id[2], &du, &dv);
+		calculate_uvs(id[2], &du, &dv);
 		geometry_uvs_offset(geometry, du, dv);
 		generate_top_face(geometry, ao[2], light[2]);
 	}
 
 	if (face[3]) {
-		calculate_cube_uvs(id[3], &du, &dv);
+		calculate_uvs(id[3], &du, &dv);
 		geometry_uvs_offset(geometry, du, dv);
 		generate_bottom_face(geometry, ao[3], light[3]);
 	}
 
 	if (face[4]) {
-		calculate_cube_uvs(id[4], &du, &dv);
+		calculate_uvs(id[4], &du, &dv);
 		geometry_uvs_offset(geometry, du, dv);
 		generate_north_face(geometry, ao[4], light[4]);
 	}
 
 	if (face[5]) {
-		calculate_cube_uvs(id[5], &du, &dv);
+		calculate_uvs(id[5], &du, &dv);
 		geometry_uvs_offset(geometry, du, dv);
 		generate_south_face(geometry, ao[5], light[5]);
 	}
@@ -135,7 +137,7 @@ void generate_south_face(geometry_t geometry, float ao[4], float light[4]) {
 
 void generate_west_face(geometry_t geometry, float ao[4], float light[4]) {
 	// Configure the geometry for the face
-	geometry_normals(geometry, 0, +1, 0);
+	geometry_normals(geometry, -1, 0, 0);
 
 	// Insert the indices, flipping according to ambient occlusion
 	if (ao[0] + ao[3] > ao[1] + ao[2]) {
@@ -148,30 +150,30 @@ void generate_west_face(geometry_t geometry, float ao[4], float light[4]) {
 
 	// Insert vertices
 
-	geometry_position(geometry, -1, +1, -1);
-	geometry_uvs(geometry, F, T);
+	geometry_position(geometry, -1, -1, -1);
+	geometry_uvs(geometry, F, F);
 	geometry_lighting(geometry, ao[0], light[0]);
 	geometry_vertex(geometry);
 
-	geometry_position(geometry, -1, +1, +1);
-	geometry_uvs(geometry, F, F);
+	geometry_position(geometry, -1, -1, +1);
+	geometry_uvs(geometry, T, F);
 	geometry_lighting(geometry, ao[1], light[1]);
 	geometry_vertex(geometry);
 
-	geometry_position(geometry, +1, +1, -1);
-	geometry_uvs(geometry, T, T);
+	geometry_position(geometry, -1, +1, -1);
+	geometry_uvs(geometry, F, T);
 	geometry_lighting(geometry, ao[2], light[2]);
 	geometry_vertex(geometry);
 
-	geometry_position(geometry, +1, +1, +1);
-	geometry_uvs(geometry, T, F);
+	geometry_position(geometry, -1, +1, +1);
+	geometry_uvs(geometry, T, T);
 	geometry_lighting(geometry, ao[3], light[3]);
 	geometry_vertex(geometry);
 }
 
 void generate_east_face(geometry_t geometry, float ao[4], float light[4]) {
 	// Configure the geometry for the face
-	geometry_normals(geometry, 0, -1, 0);
+	geometry_normals(geometry, +1, 0, 0);
 
 	// Insert the indices, flipping according to ambient occlusion
 	if (ao[0] + ao[3] > ao[1] + ao[2]) {
@@ -184,30 +186,30 @@ void generate_east_face(geometry_t geometry, float ao[4], float light[4]) {
 	
 	// Insert vertices
 
-	geometry_position(geometry, -1, -1, -1);
-	geometry_uvs(geometry, F, F);
+	geometry_position(geometry, +1, -1, -1);
+	geometry_uvs(geometry, T, F);
 	geometry_lighting(geometry, ao[0], light[0]);
 	geometry_vertex(geometry);
 
-	geometry_position(geometry, -1, -1, +1);
-	geometry_uvs(geometry, F, T);
+	geometry_position(geometry, +1, -1, +1);
+	geometry_uvs(geometry, F, F);
 	geometry_lighting(geometry, ao[1], light[1]);
 	geometry_vertex(geometry);
 
-	geometry_position(geometry, +1, -1, -1);
-	geometry_uvs(geometry, T, F);
+	geometry_position(geometry, +1, +1, -1);
+	geometry_uvs(geometry, T, T);
 	geometry_lighting(geometry, ao[2], light[2]);
 	geometry_vertex(geometry);
 
-	geometry_position(geometry, +1, -1, +1);
-	geometry_uvs(geometry, T, T);
+	geometry_position(geometry, -1, +1, +1);
+	geometry_uvs(geometry, F, T);
 	geometry_lighting(geometry, ao[3], light[3]);
 	geometry_vertex(geometry);
 }
 
 void generate_bottom_face(geometry_t geometry, float ao[4], float light[4]) {
 	// Configure the geometry for the face
-	geometry_normals(geometry, 0, 0, -1);
+	geometry_normals(geometry, 0, -1, 0);
 
 	// Insert the indices, flipping according to ambient occlusion
 	if (ao[0] + ao[3] > ao[1] + ao[2]) {
@@ -243,36 +245,36 @@ void generate_bottom_face(geometry_t geometry, float ao[4], float light[4]) {
 
 void generate_top_face(geometry_t geometry, float ao[4], float light[4]) {
 	// Configure the geometry for the face
-	geometry_normals(geometry, 0, 0, +1);
+	geometry_normals(geometry, 0, +1, 0);
 
 	// Insert the indices, flipping according to ambient occlusion
 	if (ao[0] + ao[3] > ao[1] + ao[2]) {
-		geometry_triangle(geometry, 0, 2, 1);
-		geometry_triangle(geometry, 2, 3, 1);
+		geometry_triangle(geometry, 0, 1, 2);
+		geometry_triangle(geometry, 1, 3, 2);
 	} else {
-		geometry_triangle(geometry, 0, 3, 1);
-		geometry_triangle(geometry, 0, 2, 3);
+		geometry_triangle(geometry, 0, 3, 2);
+		geometry_triangle(geometry, 0, 1, 3);
 	}
 
 	// Insert vertices
 
-	geometry_position(geometry, -1, -1, +1);
-	geometry_uvs(geometry, T, F);
+	geometry_position(geometry, -1, +1, -1);
+	geometry_uvs(geometry, F, T);
 	geometry_lighting(geometry, ao[0], light[0]);
 	geometry_vertex(geometry);
 
 	geometry_position(geometry, -1, +1, +1);
-	geometry_uvs(geometry, T, T);
+	geometry_uvs(geometry, F, F);
 	geometry_lighting(geometry, ao[1], light[1]);
 	geometry_vertex(geometry);
 
-	geometry_position(geometry, +1, -1, +1);
-	geometry_uvs(geometry, F, F);
+	geometry_position(geometry, +1, +1, -1);
+	geometry_uvs(geometry, T, T);
 	geometry_lighting(geometry, ao[2], light[2]);
 	geometry_vertex(geometry);
 
 	geometry_position(geometry, +1, +1, +1);
-	geometry_uvs(geometry, F, T);
+	geometry_uvs(geometry, T, F);
 	geometry_lighting(geometry, ao[3], light[3]);
 	geometry_vertex(geometry);
 }
@@ -281,8 +283,8 @@ void generate_top_face(geometry_t geometry, float ao[4], float light[4]) {
 
 void generate_cross_geometry(geometry_t geometry, int id, float ao, float light, float x, float y, float z, float rotation) {
 	// Calculate the UV offset
-	float du = plants[id] % 16 / 16;
-	float dv = plants[id] / 16 / 16;
+	float du, dv;
+	calculate_uvs(plants[id], &du, &dv);
 	geometry_uvs_offset(geometry, du, dv);
 
 	// Configure the block information
@@ -403,32 +405,32 @@ void generate_player_geometry(geometry_t geometry, float x, float y, float z, fl
 	geometry_normal_enable(geometry, transform);
 
 	// West Face
-	calculate_cube_uvs(226, &du, &dv);
+	calculate_uvs(226, &du, &dv);
 	geometry_uvs_offset(geometry, du, dv);
 	generate_west_face(geometry, ao, light);
 
 	// East Face
-	calculate_cube_uvs(224, &du, &dv);
+	calculate_uvs(224, &du, &dv);
 	geometry_uvs_offset(geometry, du, dv);
 	generate_east_face(geometry, ao, light);
 
 	// Top Face
-	calculate_cube_uvs(241, &du, &dv);
+	calculate_uvs(241, &du, &dv);
 	geometry_uvs_offset(geometry, du, dv);
 	generate_top_face(geometry, ao, light);
 
 	// Bottom Face
-	calculate_cube_uvs(209, &du, &dv);
+	calculate_uvs(209, &du, &dv);
 	geometry_uvs_offset(geometry, du, dv);
 	generate_bottom_face(geometry, ao, light);
 
 	// North Face
-	calculate_cube_uvs(225, &du, &dv);
+	calculate_uvs(225, &du, &dv);
 	geometry_uvs_offset(geometry, du, dv);
 	generate_north_face(geometry, ao, light);
 
 	// South Face
-	calculate_cube_uvs(227, &du, &dv);
+	calculate_uvs(227, &du, &dv);
 	geometry_uvs_offset(geometry, du, dv);
 	generate_south_face(geometry, ao, light);
 

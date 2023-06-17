@@ -102,7 +102,8 @@ typedef struct {
     State state;
     State state1;
     State state2;
-    GLuint buffer;
+    geometry_t geometry;
+	mesh_t mesh;
 } Player;
 
 typedef struct {
@@ -262,12 +263,6 @@ GLuint gen_sky_buffer() {
     return gen_buffer(sizeof(data), data);
 }
 
-GLuint gen_player_buffer(float x, float y, float z, float rx, float ry) {
-    GLfloat *data = malloc_faces(10, 6);
-    make_player(data, x, y, z, rx, ry);
-    return gen_faces(10, 6, data);
-}
-
 GLuint gen_text_buffer(float x, float y, float n, char *text) {
     int length = (int)strlen(text);
     GLfloat *data = malloc_faces(4, length);
@@ -352,14 +347,6 @@ void draw_lines(Attrib *attrib, GLuint buffer, int components, int count) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void draw_chunk(Attrib *attrib, Chunk *chunk) {
-	mesh_draw(&chunk->mesh);
-}
-
-void draw_item(Attrib *attrib, GLuint buffer, int count) {
-    draw_triangles_3d_ao(attrib, buffer, count);
-}
-
 void draw_text(Attrib *attrib, GLuint buffer, int length) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -381,18 +368,6 @@ void draw_sign(Attrib *attrib, GLuint buffer, int length) {
     glDisable(GL_POLYGON_OFFSET_FILL);
 }
 
-void draw_cube(Attrib *attrib, GLuint buffer) {
-    draw_item(attrib, buffer, 36);
-}
-
-void draw_plant(Attrib *attrib, GLuint buffer) {
-    draw_item(attrib, buffer, 24);
-}
-
-void draw_player(Attrib *attrib, Player *player) {
-    draw_cube(attrib, player->buffer);
-}
-
 Player *find_player(int id) {
     for (int i = 0; i < g->player_count; i++) {
         Player *player = g->players + i;
@@ -403,9 +378,7 @@ Player *find_player(int id) {
     return 0;
 }
 
-void update_player(Player *player,
-    float x, float y, float z, float rx, float ry, int interpolate)
-{
+void update_player(Player *player, float x, float y, float z, float rx, float ry, int interpolate) {
     if (interpolate) {
         State *s1 = &player->state1;
         State *s2 = &player->state2;
@@ -418,12 +391,11 @@ void update_player(Player *player,
         if (s1->rx - s2->rx > PI) {
             s1->rx -= 2 * PI;
         }
-    }
-    else {
+    } else {
         State *s = &player->state;
         s->x = x; s->y = y; s->z = z; s->rx = rx; s->ry = ry;
-        del_buffer(player->buffer);
-        player->buffer = gen_player_buffer(s->x, s->y, s->z, s->rx, s->ry);
+		generate_player_geometry(player->geometry, s->x, s->y, s->z, s->rx, s->ry);
+		geometry_upload_to(player->geometry, &player->mesh);
     }
 }
 
@@ -451,7 +423,8 @@ void delete_player(int id) {
         return;
     }
     int count = g->player_count;
-    del_buffer(player->buffer);
+	geometry_delete(player->geometry);
+	mesh_delete(&player->mesh);
     Player *other = g->players + (--count);
     memcpy(player, other, sizeof(Player));
     g->player_count = count;
@@ -460,7 +433,8 @@ void delete_player(int id) {
 void delete_all_players() {
     for (int i = 0; i < g->player_count; i++) {
         Player *player = g->players + i;
-        del_buffer(player->buffer);
+		geometry_delete(player->geometry);
+		mesh_delete(&player->mesh);
     }
     g->player_count = 0;
 }
@@ -1098,7 +1072,7 @@ void compute_chunk(WorkerItem *item) {
         }
         else {
 			int faces[6] = { f1, f2, f3, f4, f5, f6 };
-			generate_cube_geometry(geometry, id, ao, light, faces, ex / 2, ey / 2, ez / 2);
+//			generate_cube_geometry(geometry, (int*)blocks[id], ao, light, faces, ex / 2, ey / 2, ez / 2);
         }
         offset += total;
     } END_MAP_FOR_EACH;
@@ -1112,22 +1086,28 @@ void compute_chunk(WorkerItem *item) {
 	item->geometry = geometry;
 }
 
+void vertex_mesh_init(mesh_t *mesh) {
+	*mesh = mesh_open();
+	GLsizei stride = sizeof(GLfloat) * 10;
+	// normal
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, 0);
+	// position
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, sizeof(GLfloat) * 3);
+	// uv light ao
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, stride, sizeof(GLfloat) * 6);
+	mesh_close();
+}
+
 void generate_chunk(Chunk *chunk, WorkerItem *item) {
     chunk->miny = item->miny;
     chunk->maxy = item->maxy;
 
 	// Create the chunk's mesh if missing
-	if (!chunk->mesh.vao) {
-		mesh_t mesh = mesh_init();
-		GLsizei stride = sizeof(GLfloat) * 10;
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, 0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, sizeof(GLfloat) * 3);
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, stride, sizeof(GLfloat) * 6);
-		glBindVertexArray(0);
-	}
+	if (!chunk->mesh.vao)
+		vertex_mesh_init(&chunk->mesh);
 
 	// Update the chunk's mesh
 	geometry_upload_to(item->geometry, &chunk->mesh);
@@ -1627,8 +1607,8 @@ int render_chunks(Attrib *attrib, Player *player) {
             planes, chunk->p, chunk->q, chunk->miny, chunk->maxy))
         {
             continue;
-        }
-        draw_chunk(attrib, chunk);
+		}
+		mesh_draw(&chunk->mesh);
         result += chunk->faces;
     }
     return result;
@@ -1702,18 +1682,15 @@ void render_players(Attrib *attrib, Player *player) {
     glUniform1f(attrib->timer, time_of_day());
     for (int i = 0; i < g->player_count; i++) {
         Player *other = g->players + i;
-        if (other != player) {
-            draw_player(attrib, other);
-        }
+        if (other != player)
+			mesh_draw(&other->mesh);
     }
 }
 
 void render_sky(Attrib *attrib, Player *player, GLuint buffer) {
     State *s = &player->state;
     mat4 matrix;
-    set_matrix_3d(
-        matrix, g->width, g->height,
-        0, 0, 0, s->rx, s->ry, g->fov, 0, g->render_radius);
+    set_matrix_3d(matrix, g->width, g->height, 0, 0, 0, s->rx, s->ry, g->fov, 0, g->render_radius);
     glUseProgram(attrib->program);
     glUniformMatrix4fv(attrib->matrix, 1, GL_FALSE, (float*)matrix);
     glUniform1i(attrib->sampler, 2);
@@ -1761,20 +1738,21 @@ void uniforms_item(Attrib *attrib) {
     glUniformMatrix4fv(attrib->matrix, 1, GL_FALSE, (float*)matrix);
     glUniform3f(attrib->camera, 0, 0, 5);
     glUniform1i(attrib->sampler, 0);
-    glUniform1f(attrib->timer, time_of_day());
+    glUniform1f(attrib->timer, 1);
 }
 
 void generate_item_geometry(geometry_t geometry, int id) {
+	id = items[id];
 	if (is_plant(id))
 		generate_cross_geometry(geometry, id, 0, 1, 0, 0, 0, 45);
 	else {
-		float ao[6][4];
-		memset(ao, 0, 6 * 4);
-		float light[6][4];
-		memset(light, 1, 6 * 4);
-		int faces[6];
-		memset(faces, 1, 6);
-		generate_cube_geometry(geometry, id, ao, light, faces, 0, 0, 0);
+		float ao[6][4] = { 0 };
+		float light[6][4] = { 0 };
+		for (int i = 0; i < 6 * 4; i++)
+			(*light)[i] = 1;
+		int faces[6] = { 1, 1, 1, 1, 1, 1 };
+		int *ids = (int*)blocks[id];
+		generate_cube_geometry(geometry, ids, ao, light, faces, 0, 0, 0);
 	}
 }
 
@@ -2500,13 +2478,11 @@ void parse_buffer(char *buffer) {
                 player = g->players + g->player_count;
                 g->player_count++;
                 player->id = pid;
-                player->buffer = 0;
                 snprintf(player->name, MAX_NAME_LENGTH, "player%d", pid);
                 update_player(player, px, py, pz, prx, pry, 1); // twice
             }
-            if (player) {
+            if (player)
                 update_player(player, px, py, pz, prx, pry, 1);
-            }
         }
         if (sscanf(line, "D,%d", &pid) == 1) {
             delete_player(pid);
@@ -2757,8 +2733,9 @@ int main(int argc, char **argv) {
     }
 
 	// INITIALIZE GLOBAL MEMORY
-	g->item_geometry = geometry_init(8);
-	g->item_mesh = mesh_init();
+	g->item_geometry = geometry_init(6);
+	vertex_mesh_init(&g->item_mesh);
+	g->last_item_index = -1;
 
 	GLint error;
 	while (error = glGetError(), error != GL_NO_ERROR)
@@ -2801,7 +2778,8 @@ int main(int argc, char **argv) {
         State *s = &g->players->state;
         me->id = 0;
         me->name[0] = '\0';
-        me->buffer = 0;
+		me->geometry = geometry_init(6);
+		vertex_mesh_init(&me->mesh);
         g->player_count = 1;
 
         // LOAD STATE FROM DATABASE //
@@ -2867,35 +2845,35 @@ int main(int argc, char **argv) {
             g->observe1 = g->observe1 % g->player_count;
             g->observe2 = g->observe2 % g->player_count;
             delete_chunks();
-            del_buffer(me->buffer);
-            me->buffer = gen_player_buffer(s->x, s->y, s->z, s->rx, s->ry);
-            for (int i = 1; i < g->player_count; i++) {
+//			generate_player_geometry(me->geometry, s->x, s->y, s->z, s->rx, s->ry);
+			geometry_upload_to(me->geometry, &me->mesh);
+            for (int i = 1; i < g->player_count; i++)
                 interpolate_player(g->players + i);
-            }
             Player *player = g->players + g->observe1;
 
             // RENDER 3-D SCENE //
             glClear(GL_COLOR_BUFFER_BIT);
             glClear(GL_DEPTH_BUFFER_BIT);
-            render_sky(&sky_attrib, player, sky_buffer);
+//            render_sky(&sky_attrib, player, sky_buffer);
             glClear(GL_DEPTH_BUFFER_BIT);
-            int face_count = render_chunks(&block_attrib, player);
-            render_signs(&text_attrib, player);
-            render_sign(&text_attrib, player);
-            render_players(&block_attrib, player);
+//            int face_count = render_chunks(&block_attrib, player);
+			int face_count = 0;
+//            render_signs(&text_attrib, player);
+//            render_sign(&text_attrib, player);
+//            render_players(&block_attrib, player);
             if (SHOW_WIREFRAME) {
-                render_wireframe(&line_attrib, player);
+//                render_wireframe(&line_attrib, player);
             }
-			printf("not SCENE\n");
 
             // RENDER HUD //
             glClear(GL_DEPTH_BUFFER_BIT);
 			if (SHOW_CROSSHAIRS) {
-				render_crosshairs(&line_attrib);
+//				render_crosshairs(&line_attrib);
 			}
             if (SHOW_ITEM) {
 				if (g->item_index != g->last_item_index) {
 					generate_item_geometry(g->item_geometry, g->item_index);
+					geometry_upload_to(g->item_geometry, &g->item_mesh);
 					g->last_item_index = g->item_index;
 				}
 				uniforms_item(&block_attrib);
@@ -2986,7 +2964,7 @@ int main(int argc, char **argv) {
 
 			GLint error;
 			while (error = glGetError(), error != GL_NO_ERROR)
-				fprintf(stderr, "[OpenGL] error %d\n", error);
+				fprintf(stderr, "[OpenGL] error %x\n", error);
 
             // SWAP AND POLL //
             glfwSwapBuffers(g->window);

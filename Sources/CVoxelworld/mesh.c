@@ -9,12 +9,20 @@
 
 //MARK: - Mesh Management
 
-mesh_t mesh_init() {
+mesh_t mesh_open() {
 	mesh_t mesh = {};
 	glGenVertexArrays(1, &mesh.vao);
 	glBindVertexArray(mesh.vao);
 	glGenBuffers(2, &mesh.vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, mesh.vbo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh.ebo);
 	return mesh;
+}
+
+void mesh_close() {
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void mesh_delete(mesh_t *mesh) {
@@ -24,7 +32,7 @@ void mesh_delete(mesh_t *mesh) {
 }
 
 void mesh_update(mesh_t *mesh, void *vertices, GLsizei vertexCount, void *indices, GLsizei indexCount) {
-	glBindBuffer(GL_ARRAY_BUFFER, mesh->vao);
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
 	glBufferData(GL_ARRAY_BUFFER, vertexCount, vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ebo);
@@ -50,8 +58,6 @@ struct geometry_s {
 	mat4 position_modifier;
 	mat4 normal_modifier;
 	struct vertex_s vertex;
-	// Sizes are in faces
-	GLsizei size;
 	GLsizei capacity;
 	float du, dv;
 	float dx, dy, dz;
@@ -70,24 +76,28 @@ geometry_t geometry_init(GLsizei capacity) {
 	return geometry;
 }
 
-GLsizei geometry_size(geometry_t geometry) {
-	return geometry->size;
-}
-
-void geometry_upload(geometry_t geometry, GLuint vao, GLuint vbo, GLuint ebo) {
-	glBindVertexArray(vao);
+void geometry_upload(geometry_t geometry, GLuint vbo, GLuint ebo, GLsizei *size) {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, geometry->size * 4, geometry->vertex_buffer, GL_STATIC_DRAW);
+	GLsizeiptr vertices = geometry->vertices - geometry->vertex_buffer;
+	glBufferData(GL_ARRAY_BUFFER, vertices * sizeof(struct vertex_s), geometry->vertex_buffer, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, geometry->size * 6, geometry->index_buffer, GL_STATIC_DRAW);
+	GLsizeiptr indices = geometry->indices - geometry->index_buffer;
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices * sizeof(unsigned short), geometry->index_buffer, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+
+	*size = (GLsizei)indices;
 }
 
 void geometry_upload_to(geometry_t geometry, mesh_t *mesh) {
-	geometry_upload(geometry, mesh->vao, mesh->vbo, mesh->ebo);
-	mesh->size = geometry_size(geometry);
+	geometry_upload(geometry, mesh->vbo, mesh->ebo, &mesh->size);
+	// reset the geometry
+	struct geometry_s tmp = *geometry;
+	*geometry = (struct geometry_s){ };
+	geometry->capacity = tmp.capacity;
+	geometry->indices = geometry->index_buffer = tmp.index_buffer;
+	geometry->vertices = geometry->vertex_buffer = tmp.vertex_buffer;
 }
 
 void geometry_delete(geometry_t geometry) {
@@ -96,16 +106,16 @@ void geometry_delete(geometry_t geometry) {
 	free(geometry);
 }
 
-void geometry_normals_apply(geometry_t geometry, mat4 transform) {
+void geometry_normal_apply(geometry_t geometry, mat4 transform) {
 	glm_mat4_mulv3(transform, geometry->vertex.normal, 0, geometry->vertex.normal);
 }
 
-void geometry_normals_enable(geometry_t geometry, mat4 transform) {
+void geometry_normal_enable(geometry_t geometry, mat4 transform) {
 	glm_mat4_copy(transform, geometry->normal_modifier);
 	geometry->normal_modifier_enabled = true;
 }
 
-void geometry_normals_disable(geometry_t geometry) {
+void geometry_normal_disable(geometry_t geometry) {
 	geometry->normal_modifier_enabled = false;
 }
 

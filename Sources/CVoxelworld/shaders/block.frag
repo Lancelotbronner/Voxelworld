@@ -6,13 +6,14 @@ uniform float timer;
 uniform float daylight;
 uniform int ortho;
 
+in vec2 fragment_uv;
+in float fragment_ao;
+in float fragment_light;
+in float fog_factor;
+in float fog_height;
+in float diffuse;
+
 out vec4 result;
-out vec2 fragment_uv;
-out float fragment_ao;
-out float fragment_light;
-out float fog_factor;
-out float fog_height;
-out float diffuse;
 
 const float pi = 3.14159265;
 

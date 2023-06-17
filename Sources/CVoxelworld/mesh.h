@@ -16,10 +16,12 @@ typedef struct mesh_s {
 	GLuint vao;
 	GLuint vbo;
 	GLuint ebo;
+	/// How many indices are in this mesh
 	GLsizei size;
 } mesh_t;
 
-mesh_t mesh_init();
+mesh_t mesh_open();
+void mesh_close();
 void mesh_delete(mesh_t *mesh);
 
 void mesh_update(mesh_t *mesh, void *vertices, GLsizei vertexCount, void *indices, GLsizei indexCount);
@@ -45,9 +47,7 @@ geometry_t geometry_init(GLsizei capacity);
 
 void geometry_delete(geometry_t geometry);
 
-GLsizei geometry_size(geometry_t geometry);
-
-void geometry_upload(geometry_t geometry, GLuint vao, GLuint vbo, GLuint ebo);
+void geometry_upload(geometry_t geometry, GLuint vbo, GLuint ebo, GLsizei *size);
 
 void geometry_upload_to(geometry_t geometry, mesh_t *mesh);
 
