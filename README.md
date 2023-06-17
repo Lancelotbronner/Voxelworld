@@ -63,7 +63,7 @@ python server.py [HOST [PORT]]
 - P to observe players in the picture-in-picture view.
 - T to type text into chat.
 - Forward slash (/) to enter a command.
-- Backquote (`) to write text on any block (signs).
+- Backquote (\`) to write text on any block (signs).
 - Arrow keys emulate mouse movement.
 - Enter emulates mouse click.
 
@@ -123,11 +123,11 @@ Only exposed faces are rendered. This is an important optimization as the vast m
 
 Only visible chunks are rendered. A naive frustum-culling approach is used to test if a chunk is in the camera’s view. If it is not, it is not rendered. This results in a pretty decent performance improvement as well.
 
-Chunk buffers are completely regenerated when a block is changed in that chunk, instead of trying to update the VBO.
+Whenever chunks change their geometry is rebuilt and buffers are updated.
 
 Text is rendered using a bitmap atlas. Each character is rendered onto two triangles forming a 2D rectangle.
 
-“Modern” OpenGL is used - no deprecated, fixed-function pipeline functions are used. Vertex buffer objects are used for position, normal and texture coordinates. Vertex and fragment shaders are used for rendering. Matrix manipulation functions are in matrix.c for translation, rotation, perspective, orthographic, etc. matrices. The 3D models are made up of very simple primitives - mostly cubes and rectangles. These models are generated in code in cube.c.
+“Modern" OpenGL 4.1 is used. Vertex array objects are used to draw. Vertex and fragment shaders are used for rendering. Mathematics are using the high-performance `cglm` library. The 3D models are made up of very simple primitives - mostly cubes and rectangles. These models are generated in code in `cube.c`.
 
 Transparency in glass blocks and plants (plants don’t take up the full rectangular shape of their triangle primitives) is implemented by discarding magenta-colored pixels in the fragment shader.
 
