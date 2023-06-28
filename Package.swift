@@ -23,6 +23,7 @@ var package = Package(
 				"tinycthread",
 				"lodepng",
 				.product(name: "cglm", package: "cglm"),
+				"VoxelworldKit",
 			],
 			resources: [
 				.copy("textures"),
@@ -36,6 +37,16 @@ var package = Package(
 			linkerSettings: [
 				.linkedFramework("Cocoa"),
 				.linkedLibrary("curl"),
+			]
+		),
+
+		.target(
+			name: "VoxelworldKit",
+			dependencies: [
+				.product(name: "cglm", package: "cglm"),
+			],
+			cSettings: [
+				.define("GL_SILENCE_DEPRECATION"),
 			]
 		),
 
