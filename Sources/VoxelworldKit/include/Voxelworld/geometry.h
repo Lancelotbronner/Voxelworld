@@ -17,11 +17,12 @@ typedef struct geometry_s *geometry_t;
 
 /// Initializes an empty geometry with the specified capacity.
 /// - Parameters:
+///  - geometry: The geometry to initialize.
 ///  - vertices: The capacity for vertices.
 ///  - vertex: The size of a single vertex, in bytes.
 ///  - indices: The capacity for indices.
 ///  - index: The size of a single index, in bytes.
-geometry_t geometry_init(size_t vertices, size_t vertex, size_t indices, size_t index);
+void geometry_init(geometry_t geometry, size_t vertices, size_t vertex, size_t indices, size_t index);
 
 /// Deallocates the geometry
 /// - Parameter geometry: The geometry to deallocate.
