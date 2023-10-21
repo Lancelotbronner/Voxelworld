@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include <Voxelworld/terrain.h>
-
 #include <cglm/types.h>
 
 //MARK: - Vertex Management

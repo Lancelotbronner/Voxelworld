@@ -1,5 +1,5 @@
 //
-//  Geometry.h
+//  geometry.h
 //
 //
 //  Created by Christophe Bronner on 2023-06-22.
@@ -7,13 +7,12 @@
 
 #pragma once
 
-#include <stdint.h>
-
-//MARK: - Structures
-
-typedef struct geometry_s *geometry_t;
+#include <Voxelworld/types.h>
 
 //MARK: - Lifecycle Management
+
+/// Returns the size of a ``geometry_s``.
+size_t geometry_sizeof();
 
 /// Initializes an empty geometry with the specified capacity.
 /// - Parameters:
@@ -55,17 +54,25 @@ void geometry_clear(geometry_t geometry);
 //MARK: - Vertex Management
 
 /// Retrieves the vertex buffer of a geometry.
+///
 /// - Parameters:
 ///   - geometry: The geometry from which to retrieve the vertex buffer.
 ///   - size: The size of the buffer in bytes.
 ///  - Returns: The vertex buffer.
 void *geometry_vertices(geometry_t geometry, size_t *size);
 
+/// Returns the size of a vertex in this geometry.
+///
+/// - Parameter geometry: The geometry from which to take the information.
+size_t geometry_vertex_size(geometry_t geometry);
+
 /// Returns the number of vertices in a geometry.
+///
 /// - Parameter geometry: The geometry from which to take the information.
 size_t geometry_vertex_count(geometry_t geometry);
 
 /// Inserts a vertex into the geometry.
+///
 /// - Parameters:
 ///   - geometry: The geometry in which to insert the vertex.
 ///   - data: The data to insert into the geometry.
@@ -75,11 +82,17 @@ void geometry_vertex(geometry_t geometry, void *data, size_t count);
 //MARK: - Index Management
 
 /// Retrieves the index buffer of a geometry.
+///
 /// - Parameters:
 ///   - geometry: The geometry from which to retrieve the index buffer.
 ///   - size: The size of the buffer in bytes.
 ///  - Returns: The index buffer.
 void *geometry_indices(geometry_t geometry, size_t *size);
+
+/// Returns the size of an index in this geometry.
+///
+/// - Parameter geometry: The geometry from which to take the information.
+size_t geometry_index_size(geometry_t geometry);
 
 /// Returns the number of indices in a geometry.
 /// - Parameter geometry: The geometry from which to take the information.

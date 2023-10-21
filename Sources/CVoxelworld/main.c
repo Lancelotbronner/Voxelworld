@@ -21,6 +21,7 @@
 #include "utils.h"
 #include "world.h"
 #include "mesh.h"
+#include <Voxelworld/text.h>
 
 #if defined(__APPLE__)
 #include <CoreFoundation/CoreFoundation.h>
@@ -56,7 +57,7 @@ typedef struct {
     int dirty;
     int miny;
     int maxy;
-    mesh_t mesh;
+    legacy_mesh_t mesh;
     GLuint sign_buffer;
 } Chunk;
 
@@ -103,7 +104,7 @@ typedef struct {
     State state1;
     State state2;
     geometry_t geometry;
-	mesh_t mesh;
+	legacy_mesh_t mesh;
 } Player;
 
 typedef struct {
@@ -141,10 +142,11 @@ typedef struct {
     int observe1;
     int observe2;
     int flying;
+	legacy_mesh_t text_mesh;
     int item_index;
 	int last_item_index;
 	geometry_t item_geometry;
-	mesh_t item_mesh;
+	legacy_mesh_t item_mesh;
     int scale;
     int ortho;
     float fov;
@@ -263,16 +265,6 @@ GLuint gen_sky_buffer() {
     return gen_buffer(sizeof(data), data);
 }
 
-GLuint gen_text_buffer(float x, float y, float n, char *text) {
-    int length = (int)strlen(text);
-    GLfloat *data = malloc_faces(4, length);
-    for (int i = 0; i < length; i++) {
-        make_character(data + i * 24, x, y, n / 2, n, text[i]);
-        x += n;
-    }
-    return gen_faces(4, length, data);
-}
-
 void draw_triangles_3d_ao(Attrib *attrib, GLuint buffer, int count) {
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glEnableVertexAttribArray(attrib->position);
@@ -347,13 +339,6 @@ void draw_lines(Attrib *attrib, GLuint buffer, int components, int count) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void draw_text(Attrib *attrib, GLuint buffer, int length) {
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    draw_triangles_2d(attrib, buffer, length * 6);
-    glDisable(GL_BLEND);
-}
-
 void draw_signs(Attrib *attrib, Chunk *chunk) {
     glEnable(GL_POLYGON_OFFSET_FILL);
     glPolygonOffset(-8, -1024);
@@ -423,7 +408,7 @@ void delete_player(int id) {
         return;
     }
     int count = g->player_count;
-	geometry_delete(player->geometry);
+	geometry_legacy_delete(player->geometry);
 	mesh_delete(&player->mesh);
     Player *other = g->players + (--count);
     memcpy(player, other, sizeof(Player));
@@ -433,7 +418,7 @@ void delete_player(int id) {
 void delete_all_players() {
     for (int i = 0; i < g->player_count; i++) {
         Player *player = g->players + i;
-		geometry_delete(player->geometry);
+		geometry_legacy_delete(player->geometry);
 		mesh_delete(&player->mesh);
     }
     g->player_count = 0;
@@ -1013,7 +998,7 @@ void compute_chunk(WorkerItem *item) {
     } END_MAP_FOR_EACH;
 
     // generate geometry
-	geometry_t geometry = geometry_init(faces);
+	geometry_t geometry = geometry_legacy_init(faces);
     int offset = 0;
     MAP_FOR_EACH(map, ex, ey, ez, id) {
         if (id <= 0) {
@@ -1087,7 +1072,7 @@ void compute_chunk(WorkerItem *item) {
 	item->geometry = geometry;
 }
 
-void vertex_mesh_init(mesh_t *mesh) {
+void vertex_mesh_init(legacy_mesh_t *mesh) {
 	*mesh = mesh_open();
 	GLsizei stride = sizeof(GLfloat) * 10;
 	// normal
@@ -1099,6 +1084,18 @@ void vertex_mesh_init(mesh_t *mesh) {
 	// uv light ao
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, stride, sizeof(GLfloat) * 6);
+	mesh_close();
+}
+
+void text_mesh_init(legacy_mesh_t *mesh) {
+	*mesh = mesh_open();
+	GLsizei stride = sizeof(GLfloat) * 10;
+	// position
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, 0);
+	// uv
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, sizeof(GLfloat) * 3);
 	mesh_close();
 }
 
@@ -1166,7 +1163,7 @@ void init_chunk(Chunk *chunk, int p, int q) {
     chunk->q = q;
     chunk->faces = 0;
     chunk->sign_faces = 0;
-	chunk->mesh = (mesh_t){};
+	chunk->mesh = (legacy_mesh_t){};
     chunk->sign_buffer = 0;
     dirty_chunk(chunk);
     SignList *signs = &chunk->signs;
@@ -1609,7 +1606,7 @@ int render_chunks(Attrib *attrib, Player *player) {
         {
             continue;
 		}
-		mesh_draw(&chunk->mesh);
+		mesh_legacy_draw(&chunk->mesh);
         result += chunk->faces;
     }
     return result;
@@ -1684,7 +1681,7 @@ void render_players(Attrib *attrib, Player *player) {
     for (int i = 0; i < g->player_count; i++) {
         Player *other = g->players + i;
         if (other != player)
-			mesh_draw(&other->mesh);
+			mesh_legacy_draw(&other->mesh);
     }
 }
 
@@ -1757,20 +1754,32 @@ void generate_item_geometry(geometry_t geometry, int id) {
 	}
 }
 
-void render_text(
-    Attrib *attrib, int justify, float x, float y, float n, char *text)
-{
-    mat4 matrix;
-    set_matrix_2d(matrix, g->width, g->height);
-    glUseProgram(attrib->program);
-    glUniformMatrix4fv(attrib->matrix, 1, GL_FALSE, (float*)matrix);
-    glUniform1i(attrib->sampler, 1);
-    glUniform1i(attrib->extra1, 0);
-    size_t length = strlen(text);
-    x -= n * justify * (length - 1) / 2;
-    GLuint buffer = gen_text_buffer(x, y, n, text);
-    draw_text(attrib, buffer, (int)length);
-    del_buffer(buffer);
+void uniforms_text(Attrib *attrib) {
+	mat4 matrix;
+	set_matrix_2d(matrix, g->width, g->height);
+	glUseProgram(attrib->program);
+	glUniformMatrix4fv(attrib->matrix, 1, GL_FALSE, (float*)matrix);
+	glUniform1i(attrib->sampler, 1);
+	glUniform1i(attrib->extra1, 0);
+}
+
+void text_justify_left(char *text, size_t length, float size, float *x, float *y) {
+	*x -= size * (length - 1) / 2;
+}
+
+void text_justify_right(char *text, size_t length, float size, float *x, float *y) {
+	*x += size * (length - 1) / 2;
+}
+
+void text_justify_center(char *text, size_t length, float size, float *x, float *y) {
+
+}
+
+void gui_draw(const legacy_mesh_t *mesh) {
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	mesh_legacy_draw(mesh);
+	glDisable(GL_BLEND);
 }
 
 void add_message(const char *text) {
@@ -2733,14 +2742,17 @@ int main(int argc, char **argv) {
         thrd_create(&worker->thrd, worker_run, worker);
     }
 
-	// INITIALIZE GLOBAL MEMORY
-	g->item_geometry = geometry_init(6);
+	// INITIALIZE MESHES AND GEOMETRY //
+
+	g->item_geometry = geometry_legacy_init(6);
 	vertex_mesh_init(&g->item_mesh);
 	g->last_item_index = -1;
 
+	text_mesh_init(&g->text_mesh);
+
 	GLint error;
 	while (error = glGetError(), error != GL_NO_ERROR)
-		fprintf(stderr, "[OpenGL] error %d\n", error);
+		fprintf(stderr, "[OpenGL] error 0x%x\n", error);
 
 	printf("[Voxelworld] Initialized successfully\n");
 
@@ -2779,7 +2791,7 @@ int main(int argc, char **argv) {
         State *s = &g->players->state;
         me->id = 0;
         me->name[0] = '\0';
-		me->geometry = geometry_init(6);
+		me->geometry = geometry_legacy_init(6);
 		vertex_mesh_init(&me->mesh);
         g->player_count = 1;
 
@@ -2879,15 +2891,17 @@ int main(int argc, char **argv) {
 					g->last_item_index = g->item_index;
 				}
 				uniforms_item(&block_attrib);
-				mesh_draw(&g->item_mesh);
+				mesh_legacy_draw(&g->item_mesh);
             }
 
             // RENDER TEXT //
-			// TODO: Fix the text not showing
             char text_buffer[1024];
             float ts = 12 * g->scale;
             float tx = ts / 2;
             float ty = g->height - ts;
+			mesh_t text_mesh = alloca(mesh_sizeof());
+			mesh_init(text_mesh, GL_TRIANGLES, GL_DYNAMIC_DRAW);
+
             if (SHOW_INFO_TEXT) {
                 int hour = time_of_day() * 24;
                 char am_pm = hour < 12 ? 'a' : 'p';
@@ -2899,34 +2913,86 @@ int main(int argc, char **argv) {
                     chunked(s->x), chunked(s->z), s->x, s->y, s->z,
                     g->player_count, g->chunk_count,
                     face_count * 2, hour, am_pm, fps.fps);
-                render_text(&text_attrib, ALIGN_LEFT, tx, ty, ts, text_buffer);
+
+				// configure the text
+				size_t length = strlen(text_buffer);
+				text_justify_left(text_buffer, length, ts, &tx, &ty);
+				
+				// build the geometry
+				text_clear();
+				text_string(text_buffer, length, ts, tx, ty);
+				text_upload(text_mesh);
+
+				// draw the mesh
+				uniforms_text(&text_attrib);
+				mesh_draw(text_mesh);
+
                 ty -= ts * 2;
             }
             if (SHOW_CHAT_TEXT) {
                 for (int i = 0; i < MAX_MESSAGES; i++) {
                     int index = (g->message_index + i) % MAX_MESSAGES;
-                    if (strlen(g->messages[index])) {
-                        render_text(&text_attrib, ALIGN_LEFT, tx, ty, ts,
-                            g->messages[index]);
-                        ty -= ts * 2;
-                    }
+					char *message = g->messages[index];
+					size_t length = strlen(message);
+					if (!length) continue;
+
+					// configure the text
+					text_justify_left(message, length, ts, &tx, &ty);
+
+					// build the geometry
+					text_clear();
+					text_string(message, length, ts, tx, ty);
+					text_upload(text_mesh);
+
+					// draw the mesh
+					uniforms_text(&text_attrib);
+					mesh_draw(text_mesh);
+					ty -= ts * 2;
                 }
             }
             if (g->typing) {
                 snprintf(text_buffer, 1024, "> %s", g->typing_buffer);
-                render_text(&text_attrib, ALIGN_LEFT, tx, ty, ts, text_buffer);
+				// configure the text
+				size_t length = strlen(text_buffer);
+				text_justify_left(text_buffer, length, ts, &tx, &ty);
+
+				// build the geometry
+				text_clear();
+				text_string(text_buffer, length, ts, tx, ty);
+				text_upload(text_mesh);
+
+				// draw the mesh
+				uniforms_text(&text_attrib);
+				mesh_draw(text_mesh);
                 ty -= ts * 2;
             }
             if (SHOW_PLAYER_NAMES) {
                 if (player != me) {
-                    render_text(&text_attrib, ALIGN_CENTER,
-                        g->width / 2, ts, ts, player->name);
+					// configure the text
+					size_t length = strlen(player->name);
+
+					// build the geometry
+					text_clear();
+					text_string(player->name, length, ts, g->width, ts);
+					text_upload(text_mesh);
+
+					// draw the mesh
+					uniforms_text(&text_attrib);
+					mesh_draw(text_mesh);
                 }
                 Player *other = player_crosshair(player);
                 if (other) {
-                    render_text(&text_attrib, ALIGN_CENTER,
-                        g->width / 2, g->height / 2 - ts - 24, ts,
-                        other->name);
+					// configure the text
+					size_t length = strlen(other->name);
+
+					// build the geometry
+					text_clear();
+					text_string(other->name, length, ts, g->width / 2, g->height / 2 - ts - 24);
+					text_upload(text_mesh);
+
+					// draw the mesh
+					uniforms_text(&text_attrib);
+					mesh_draw(text_mesh);
                 }
             }
 
@@ -2960,14 +3026,27 @@ int main(int argc, char **argv) {
                 render_players(&block_attrib, player);
                 glClear(GL_DEPTH_BUFFER_BIT);
                 if (SHOW_PLAYER_NAMES) {
-                    render_text(&text_attrib, ALIGN_CENTER,
-                        pw / 2, ts, ts, player->name);
+					// configure the text
+					size_t length = strlen(player->name);
+
+					// build the geometry
+					text_clear();
+					text_string(player->name, length, ts, pw / 2, ts);
+					text_upload(text_mesh);
+
+					// draw the mesh
+					uniforms_text(&text_attrib);
+					mesh_draw(text_mesh);
                 }
             }
 
+			mesh_deinit(text_mesh);
+
+#if DEBUG
 			GLint error;
 			while (error = glGetError(), error != GL_NO_ERROR)
 				fprintf(stderr, "[OpenGL] error %x\n", error);
+#endif
 
             // SWAP AND POLL //
             glfwSwapBuffers(g->window);

@@ -7,12 +7,10 @@
 
 #pragma once
 
-#include <cglm/types.h>
-
 //MARK: - Vertex Management
 
 struct text_vertex_s {
-	float position[3];
+	float position[2];
 	float uv[2];
 };
 
@@ -21,10 +19,20 @@ void vertex_text();
 
 //MARK: - Primitives Management
 
-/// Assigns the calculated UVs for the specified character.
+/// Inserts a triangle into the text geometry.
 ///
-/// - Parameter character: The character to use as index for UVs.
-void text_character(char character);
+/// - Parameters:
+///   - a: The first index of the triangle.
+///   - b: The second index of the triangle.
+///   - c: The third index of the triangle.
+void text_triangle(unsigned int a, unsigned int b, unsigned int c);
+
+/// Applies the given UV offset to futur vertices.
+///
+/// - Parameters:
+///   - du: The offset in the `u` component.
+///   - dv: The offset in the `v` component.
+void text_uvs_offset(float du, float dv);
 
 /// Assigns the given UVs to the current character.
 ///
@@ -43,8 +51,7 @@ void text_size(float size);
 /// - Parameters:
 ///   - dx: The offset in the `x` component.
 ///   - dy: The offset in the `y` component.
-///   - dz: The offset in the `z` component.
-void text_position_offset(float dx, float dy, float dz);
+void text_position_offset(float dx, float dy);
 
 /// Assigns the given position to the current vertex, relative to the beginning of the text.
 ///

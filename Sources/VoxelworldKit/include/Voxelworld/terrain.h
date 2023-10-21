@@ -5,7 +5,7 @@
 //  Created by Christophe Bronner on 2023-06-29.
 //
 
-#include <Voxelworld/mesh.h>
+#include <Voxelworld/types.h>
 
 //MARK: - Terrain Management
 

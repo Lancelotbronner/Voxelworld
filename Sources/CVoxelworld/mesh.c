@@ -9,8 +9,8 @@
 
 //MARK: - Mesh Management
 
-mesh_t mesh_open() {
-	mesh_t mesh = {};
+legacy_mesh_t mesh_open() {
+	legacy_mesh_t mesh = {};
 	glGenVertexArrays(1, &mesh.vao);
 	glBindVertexArray(mesh.vao);
 	glGenBuffers(2, &mesh.vbo);
@@ -25,13 +25,13 @@ void mesh_close() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void mesh_delete(mesh_t *mesh) {
+void mesh_delete(legacy_mesh_t *mesh) {
 	glDeleteVertexArrays(1, &mesh->vao);
 	glDeleteBuffers(2, &mesh->vbo);
-	*mesh = (mesh_t){ };
+	*mesh = (legacy_mesh_t){ };
 }
 
-void mesh_update(mesh_t *mesh, void *vertices, GLsizei vertexCount, void *indices, GLsizei indexCount) {
+void mesh_legacy_update(legacy_mesh_t *mesh, void *vertices, GLsizei vertexCount, void *indices, GLsizei indexCount) {
 	glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
 	glBufferData(GL_ARRAY_BUFFER, vertexCount, vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -41,7 +41,7 @@ void mesh_update(mesh_t *mesh, void *vertices, GLsizei vertexCount, void *indice
 	mesh->size = indexCount;
 }
 
-void mesh_draw(const mesh_t *mesh) {
+void mesh_legacy_draw(const legacy_mesh_t *mesh) {
 	if (!mesh->vao)
 		return;
 	glBindVertexArray(mesh->vao);
@@ -67,7 +67,7 @@ struct geometry_s {
 	bool normal_modifier_enabled;
 };
 
-geometry_t geometry_init(GLsizei capacity) {
+geometry_t geometry_legacy_init(GLsizei capacity) {
 	geometry_t geometry = malloc(sizeof(struct geometry_s));
 	geometry->capacity = capacity;
 	geometry->index_buffer = malloc(sizeof(unsigned short) * capacity * 6);
@@ -77,7 +77,7 @@ geometry_t geometry_init(GLsizei capacity) {
 	return geometry;
 }
 
-void geometry_upload(geometry_t geometry, GLuint vbo, GLuint ebo, GLsizei *size) {
+void geometry_legacy_upload(geometry_t geometry, GLuint vbo, GLuint ebo, GLsizei *size) {
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	size_t vertices = geometry->vertices - geometry->vertex_buffer;
 	glBufferData(GL_ARRAY_BUFFER, vertices * sizeof(struct vertex_s), geometry->vertex_buffer, GL_STATIC_DRAW);
@@ -91,8 +91,8 @@ void geometry_upload(geometry_t geometry, GLuint vbo, GLuint ebo, GLsizei *size)
 	*size = (GLsizei)indices;
 }
 
-void geometry_upload_to(geometry_t geometry, mesh_t *mesh) {
-	geometry_upload(geometry, mesh->vbo, mesh->ebo, &mesh->size);
+void geometry_upload_to(geometry_t geometry, legacy_mesh_t *mesh) {
+	geometry_legacy_upload(geometry, mesh->vbo, mesh->ebo, &mesh->size);
 	// reset the geometry
 	struct geometry_s tmp = *geometry;
 	*geometry = (struct geometry_s){ };
@@ -101,7 +101,7 @@ void geometry_upload_to(geometry_t geometry, mesh_t *mesh) {
 	geometry->vertices = geometry->vertex_buffer = tmp.vertex_buffer;
 }
 
-void geometry_delete(geometry_t geometry) {
+void geometry_legacy_delete(geometry_t geometry) {
 	free(geometry->index_buffer);
 	free(geometry->vertex_buffer);
 	free(geometry);
@@ -173,7 +173,7 @@ void geometry_lighting(geometry_t geometry, float ao, float light) {
 	geometry->vertex.light = light;
 }
 
-void geometry_vertex(geometry_t geometry) {
+void geometry_legacy_vertex(geometry_t geometry) {
 	*geometry->vertices++ = geometry->vertex;
 	geometry->di++;
 }

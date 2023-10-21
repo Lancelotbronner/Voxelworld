@@ -5,7 +5,7 @@
 //  Created by Christophe Bronner on 2023-06-28.
 //
 
-#include "buffer.h"
+#include <Voxelworld/buffer.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -46,7 +46,11 @@ void buffer_trim(buffer_t buffer) {
 //MARK: - Content Management
 
 void buffer_write(buffer_t buffer, size_t offset, void *data, size_t size) {
+	size_t capacity = offset + size;
+	buffer_absolute_capacity(buffer, capacity);
 	memcpy(buffer->data + offset, data, size);
+	if (buffer->size < capacity)
+		buffer->size = capacity;
 }
 
 void buffer_push(buffer_t buffer, void *data, size_t size) {

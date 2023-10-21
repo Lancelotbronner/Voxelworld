@@ -81,22 +81,22 @@ void generate_north_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_position(geometry, -1, -1, -1);
 	geometry_uvs(geometry, F, F);
 	geometry_lighting(geometry, ao[0], light[0]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, -1, +1, -1);
 	geometry_uvs(geometry, F, T);
 	geometry_lighting(geometry, ao[1], light[1]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, -1, -1);
 	geometry_uvs(geometry, T, F);
 	geometry_lighting(geometry, ao[2], light[2]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, +1, -1);
 	geometry_uvs(geometry, T, T);
 	geometry_lighting(geometry, ao[3], light[3]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 }
 
 void generate_south_face(geometry_t geometry, float ao[4], float light[4]) {
@@ -117,22 +117,22 @@ void generate_south_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_position(geometry, -1, -1, +1);
 	geometry_uvs(geometry, T, F);
 	geometry_lighting(geometry, ao[0], light[0]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, -1, +1, +1);
 	geometry_uvs(geometry, T, T);
 	geometry_lighting(geometry, ao[1], light[1]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, -1, +1);
 	geometry_uvs(geometry, F, F);
 	geometry_lighting(geometry, ao[2], light[2]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, +1, +1);
 	geometry_uvs(geometry, F, T);
 	geometry_lighting(geometry, ao[3], light[3]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 }
 
 void generate_west_face(geometry_t geometry, float ao[4], float light[4]) {
@@ -153,22 +153,22 @@ void generate_west_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_position(geometry, -1, -1, -1);
 	geometry_uvs(geometry, F, F);
 	geometry_lighting(geometry, ao[0], light[0]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, -1, -1, +1);
 	geometry_uvs(geometry, T, F);
 	geometry_lighting(geometry, ao[1], light[1]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, -1, +1, -1);
 	geometry_uvs(geometry, F, T);
 	geometry_lighting(geometry, ao[2], light[2]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, -1, +1, +1);
 	geometry_uvs(geometry, T, T);
 	geometry_lighting(geometry, ao[3], light[3]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 }
 
 void generate_east_face(geometry_t geometry, float ao[4], float light[4]) {
@@ -189,22 +189,22 @@ void generate_east_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_position(geometry, +1, -1, -1);
 	geometry_uvs(geometry, T, F);
 	geometry_lighting(geometry, ao[0], light[0]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, -1, +1);
 	geometry_uvs(geometry, F, F);
 	geometry_lighting(geometry, ao[1], light[1]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, +1, -1);
 	geometry_uvs(geometry, T, T);
 	geometry_lighting(geometry, ao[2], light[2]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, +1, +1);
 	geometry_uvs(geometry, F, T);
 	geometry_lighting(geometry, ao[3], light[3]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 }
 
 void generate_bottom_face(geometry_t geometry, float ao[4], float light[4]) {
@@ -225,22 +225,22 @@ void generate_bottom_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_position(geometry, -1, -1, -1);
 	geometry_uvs(geometry, F, F);
 	geometry_lighting(geometry, ao[0], light[0]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, -1, -1, +1);
 	geometry_uvs(geometry, F, T);
 	geometry_lighting(geometry, ao[1], light[1]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, -1, -1);
 	geometry_uvs(geometry, T, F);
 	geometry_lighting(geometry, ao[2], light[2]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, -1, +1);
 	geometry_uvs(geometry, T, T);
 	geometry_lighting(geometry, ao[3], light[3]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 }
 
 void generate_top_face(geometry_t geometry, float ao[4], float light[4]) {
@@ -261,22 +261,22 @@ void generate_top_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_position(geometry, -1, +1, -1);
 	geometry_uvs(geometry, F, T);
 	geometry_lighting(geometry, ao[0], light[0]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, -1, +1, +1);
 	geometry_uvs(geometry, F, F);
 	geometry_lighting(geometry, ao[1], light[1]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, +1, -1);
 	geometry_uvs(geometry, T, T);
 	geometry_lighting(geometry, ao[2], light[2]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, +1, +1);
 	geometry_uvs(geometry, T, F);
 	geometry_lighting(geometry, ao[3], light[3]);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 }
 
 //MARK: - Cross Geometry
@@ -304,19 +304,19 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 
 	geometry_position(geometry, 0, -1, -1);
 	geometry_uvs(geometry, 0, 0);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, 0, -1, +1);
 	geometry_uvs(geometry, 1, 0);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, 0, +1, -1);
 	geometry_uvs(geometry, 0, 1);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, 0, +1, +1);
 	geometry_uvs(geometry, 1, 1);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	// Face #2 (mirror of #1)
 
@@ -326,19 +326,19 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 
 	geometry_position(geometry, 0, -1, -1);
 	geometry_uvs(geometry, 1, 0);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, 0, -1, +1);
 	geometry_uvs(geometry, 0, 0);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, 0, +1, -1);
 	geometry_uvs(geometry, 1, 1);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, 0, +1, +1);
 	geometry_uvs(geometry, 0, 1);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	// Face #3
 
@@ -348,19 +348,19 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 
 	geometry_position(geometry, -1, -1, 0);
 	geometry_uvs(geometry, 0, 0);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, -1, +1, 0);
 	geometry_uvs(geometry, 0, 1);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, -1, 0);
 	geometry_uvs(geometry, 1, 0);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, +1, 0);
 	geometry_uvs(geometry, 1, 1);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	// Face #4 (mirror of #3)
 
@@ -370,19 +370,19 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 
 	geometry_position(geometry, -1, -1, 0);
 	geometry_uvs(geometry, 1, 0);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, -1, +1, 0);
 	geometry_uvs(geometry, 1, 1);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, -1, 0);
 	geometry_uvs(geometry, 0, 0);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	geometry_position(geometry, +1, +1, 0);
 	geometry_uvs(geometry, 0, 1);
-	geometry_vertex(geometry);
+	geometry_legacy_vertex(geometry);
 
 	// cleanup
 	geometry_position_disable(geometry);
@@ -463,31 +463,6 @@ void make_cube_wireframe(float *data, float x, float y, float z, float n) {
         *(d++) = y + n * positions[j][1];
         *(d++) = z + n * positions[j][2];
     }
-}
-
-void make_character(
-    float *data,
-    float x, float y, float n, float m, char c)
-{
-    float *d = data;
-    float s = 0.0625;
-    float a = s;
-    float b = s * 2;
-    int w = c - 32;
-    float du = (w % 16) * a;
-    float dv = 1 - (w / 16) * b - b;
-    *(d++) = x - n; *(d++) = y - m;
-    *(d++) = du + 0; *(d++) = dv;
-    *(d++) = x + n; *(d++) = y - m;
-    *(d++) = du + a; *(d++) = dv;
-    *(d++) = x + n; *(d++) = y + m;
-    *(d++) = du + a; *(d++) = dv + b;
-    *(d++) = x - n; *(d++) = y - m;
-    *(d++) = du + 0; *(d++) = dv;
-    *(d++) = x + n; *(d++) = y + m;
-    *(d++) = du + a; *(d++) = dv + b;
-    *(d++) = x - n; *(d++) = y + m;
-    *(d++) = du + 0; *(d++) = dv + b;
 }
 
 void make_character_3d(

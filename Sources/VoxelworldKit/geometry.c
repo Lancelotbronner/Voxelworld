@@ -5,14 +5,28 @@
 //  Created by Christophe Bronner on 2023-06-22.
 //
 
-#include "geometry.h"
+#include <Voxelworld/geometry.h>
 
+#include <assert.h>
 #include <stdlib.h>
+#include <Voxelworld/buffer.h>
+
+struct geometry_s {
+	struct buffer_s indices;
+	struct buffer_s vertices;
+	size_t count;
+	uint16_t vertex;
+	uint8_t index;
+};
 
 //MARK: - Lifecycle Management
 
-geometry_t geometry_init(size_t vertices, size_t vertex, size_t indices, size_t index) {
-	geometry_t geometry = calloc(1, sizeof(struct geometry_s));
+size_t geometry_sizeof() {
+	return sizeof(struct geometry_s);
+}
+
+void geometry_init(geometry_t geometry, size_t vertices, size_t vertex, size_t indices, size_t index) {
+	assert(geometry);
 	buffer_init(&geometry->vertices, vertices);
 	buffer_init(&geometry->indices, indices);
 	geometry->vertex = vertex;
@@ -56,6 +70,10 @@ void *geometry_vertices(geometry_t geometry, size_t *size) {
 	return geometry->vertices.data;
 }
 
+size_t geometry_vertex_size(geometry_t geometry) {
+	return geometry->vertex;
+}
+
 size_t geometry_vertex_count(geometry_t geometry) {
 	return geometry->vertices.size / geometry->vertex;
 }
@@ -69,6 +87,10 @@ void geometry_vertex(geometry_t geometry, void *data, size_t size) {
 void *geometry_indices(geometry_t geometry, size_t *size) {
 	*size = geometry->indices.size;
 	return geometry->indices.data;
+}
+
+size_t geometry_index_size(geometry_t geometry) {
+	return geometry->index;
 }
 
 size_t geometry_index_count(geometry_t geometry) {

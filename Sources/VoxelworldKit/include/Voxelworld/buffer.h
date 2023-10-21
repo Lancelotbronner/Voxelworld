@@ -1,5 +1,5 @@
 //
-//  Header.h
+//  buffer.h
 //  
 //
 //  Created by Christophe Bronner on 2023-06-28.
@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <Voxelworld/types.h>
 
 //MARK: - Structures
 
@@ -16,8 +16,6 @@ struct buffer_s {
 	size_t size;
 	size_t capacity;
 };
-
-typedef struct buffer_s *buffer_t;
 
 //MARK: - Lifecycle Management
 
