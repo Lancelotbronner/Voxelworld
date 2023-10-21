@@ -8,9 +8,10 @@
 #include <Voxelworld/mesh.h>
 
 #include <assert.h>
+#include <signal.h>
 #include <stdlib.h>
-#include <OpenGL/gl3.h>
 #include <Voxelworld/geometry.h>
+#include <Voxelworld/gl.h>
 
 struct mesh_s {
 	/// Vertex Array Object
@@ -101,9 +102,11 @@ void mesh_indices32(mesh_t mesh, unsigned int *indices, size_t count) {
 //MARK: - Drawing Management
 
 void mesh_draw(mesh_t mesh) {
+	glDebugClear;
 	glBindVertexArray(mesh->vao);
 	glDrawElements(mesh->primitive, mesh->count, mesh->index, 0);
 	glBindVertexArray(0);
+	glDebugCheck;
 }
 
 //MARK: - Geometry Integration

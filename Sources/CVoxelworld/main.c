@@ -2899,8 +2899,13 @@ int main(int argc, char **argv) {
             float ts = 12 * g->scale;
             float tx = ts / 2;
             float ty = g->height - ts;
+
+			// prepare the mesh
 			mesh_t text_mesh = alloca(mesh_sizeof());
 			mesh_init(text_mesh, GL_TRIANGLES, GL_DYNAMIC_DRAW);
+			mesh_bind(text_mesh);
+			vertex_text();
+			mesh_unbind();
 
             if (SHOW_INFO_TEXT) {
                 int hour = time_of_day() * 24;
