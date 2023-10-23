@@ -116,6 +116,7 @@ void terrain_vertex() {
 	terrain.vertex.position[2] += terrain.dz;
 	terrain.vertex.uv[0] += terrain.du;
 	terrain.vertex.uv[1] += terrain.dv;
+	terrain.di++;
 	geometry_vertex(terrain.geometry, &terrain.vertex, sizeof(struct terrain_vertex_s));
 }
 

@@ -39,53 +39,53 @@ struct vertex_s {
 
 //MARK: - Geometry Management
 
-typedef struct geometry_s *geometry_t;
+typedef struct legacy_geometry_s *legacy_geometry_t;
 
 /// Initializes an empty geometry with the specified capacity.
 /// - Parameter capacity: The capacity in faces.
-geometry_t geometry_legacy_init(GLsizei capacity);
+legacy_geometry_t geometry_legacy_init(GLsizei capacity);
 
-void geometry_legacy_delete(geometry_t geometry);
+void geometry_legacy_delete(legacy_geometry_t geometry);
 
-void geometry_legacy_upload(geometry_t geometry, GLuint vbo, GLuint ebo, GLsizei *size);
+void geometry_legacy_upload(legacy_geometry_t geometry, GLuint vbo, GLuint ebo, GLsizei *size);
 
-void geometry_upload_to(geometry_t geometry, legacy_mesh_t *mesh);
+void geometry_upload_to(legacy_geometry_t geometry, legacy_mesh_t *mesh);
 
 // The following methods are specialized to the vertex structure above.
 
-void geometry_triangle(geometry_t geometry, unsigned short a, unsigned short b, unsigned short c);
+void geometry_triangle(legacy_geometry_t geometry, unsigned short a, unsigned short b, unsigned short c);
 
 /// Applies the given transformation to the current vertex's normals
-void geometry_normal_apply(geometry_t geometry, mat4 transform);
+void geometry_normal_apply(legacy_geometry_t geometry, mat4 transform);
 
 /// Enables the given transform to futur vertex normals
-void geometry_normal_enable(geometry_t geometry, mat4 transform);
+void geometry_normal_enable(legacy_geometry_t geometry, mat4 transform);
 
 /// Disables the current normals transformation
-void geometry_normal_disable(geometry_t geometry);
+void geometry_normal_disable(legacy_geometry_t geometry);
 
 /// Applies the given transform to the current vertex's position
-void geometry_position_apply(geometry_t geometry, mat4 transform);
+void geometry_position_apply(legacy_geometry_t geometry, mat4 transform);
 
 /// Enables the given transform to futur vertex positions
-void geometry_position_enable(geometry_t geometry, mat4 transform);
+void geometry_position_enable(legacy_geometry_t geometry, mat4 transform);
 
 /// Disables the current position transformation
-void geometry_position_disable(geometry_t geometry);
+void geometry_position_disable(legacy_geometry_t geometry);
 
 /// Applies the given offset to futur UVs
-void geometry_uvs_offset(geometry_t geometry, float du, float dv);
+void geometry_uvs_offset(legacy_geometry_t geometry, float du, float dv);
 
 /// Applies the given offset to futur positions
-void geometry_position_offset(geometry_t geometry, float dx, float dy, float dz);
+void geometry_position_offset(legacy_geometry_t geometry, float dx, float dy, float dz);
 
-void geometry_position(geometry_t geometry, float x, float y, float z);
+void geometry_position(legacy_geometry_t geometry, float x, float y, float z);
 
-void geometry_normals(geometry_t geometry, float x, float y, float z);
+void geometry_normals(legacy_geometry_t geometry, float x, float y, float z);
 
-void geometry_uvs(geometry_t geometry, float u, float v);
+void geometry_uvs(legacy_geometry_t geometry, float u, float v);
 
-void geometry_lighting(geometry_t geometry, float ao, float light);
+void geometry_lighting(legacy_geometry_t geometry, float ao, float light);
 
 /// Commits the current vertex to the geometry
-void geometry_legacy_vertex(geometry_t geometry);
+void geometry_legacy_vertex(legacy_geometry_t geometry);

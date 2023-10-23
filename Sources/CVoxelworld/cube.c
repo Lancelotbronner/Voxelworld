@@ -20,7 +20,7 @@ static inline void calculate_uvs(int w, float *du, float *dv) {
 
 //MARK: - Cube Geometry
 
-void generate_cube_geometry(geometry_t geometry, int id[6], float ao[6][4], float light[6][4], int face[6], float x, float y, float z) {
+void generate_cube_geometry(legacy_geometry_t geometry, int id[6], float ao[6][4], float light[6][4], int face[6], float x, float y, float z) {
 	float du, dv;
 
 	// Configure the geometry for the block
@@ -63,7 +63,7 @@ void generate_cube_geometry(geometry_t geometry, int id[6], float ao[6][4], floa
 	}
 }
 
-void generate_north_face(geometry_t geometry, float ao[4], float light[4]) {
+void generate_north_face(legacy_geometry_t geometry, float ao[4], float light[4]) {
 	// Configure the geometry for the face
 	geometry_normals(geometry, 0, 0, -1);
 
@@ -99,7 +99,7 @@ void generate_north_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_legacy_vertex(geometry);
 }
 
-void generate_south_face(geometry_t geometry, float ao[4], float light[4]) {
+void generate_south_face(legacy_geometry_t geometry, float ao[4], float light[4]) {
 	// Configure the geometry for the face
 	geometry_normals(geometry, 0, 0, +1);
 
@@ -135,7 +135,7 @@ void generate_south_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_legacy_vertex(geometry);
 }
 
-void generate_west_face(geometry_t geometry, float ao[4], float light[4]) {
+void generate_west_face(legacy_geometry_t geometry, float ao[4], float light[4]) {
 	// Configure the geometry for the face
 	geometry_normals(geometry, -1, 0, 0);
 
@@ -171,7 +171,7 @@ void generate_west_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_legacy_vertex(geometry);
 }
 
-void generate_east_face(geometry_t geometry, float ao[4], float light[4]) {
+void generate_east_face(legacy_geometry_t geometry, float ao[4], float light[4]) {
 	// Configure the geometry for the face
 	geometry_normals(geometry, +1, 0, 0);
 
@@ -207,7 +207,7 @@ void generate_east_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_legacy_vertex(geometry);
 }
 
-void generate_bottom_face(geometry_t geometry, float ao[4], float light[4]) {
+void generate_bottom_face(legacy_geometry_t geometry, float ao[4], float light[4]) {
 	// Configure the geometry for the face
 	geometry_normals(geometry, 0, -1, 0);
 
@@ -243,7 +243,7 @@ void generate_bottom_face(geometry_t geometry, float ao[4], float light[4]) {
 	geometry_legacy_vertex(geometry);
 }
 
-void generate_top_face(geometry_t geometry, float ao[4], float light[4]) {
+void generate_top_face(legacy_geometry_t geometry, float ao[4], float light[4]) {
 	// Configure the geometry for the face
 	geometry_normals(geometry, 0, +1, 0);
 
@@ -281,7 +281,7 @@ void generate_top_face(geometry_t geometry, float ao[4], float light[4]) {
 
 //MARK: - Cross Geometry
 
-void generate_cross_geometry(geometry_t geometry, int id, float ao, float light, float x, float y, float z, float rotation) {
+void generate_cross_geometry(legacy_geometry_t geometry, int id, float ao, float light, float x, float y, float z, float rotation) {
 	// Calculate the UV offset
 	float du, dv;
 	calculate_uvs(plants[id], &du, &dv);
@@ -390,7 +390,7 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 
 //MARK: - Character Geometry
 
-void generate_player_geometry(geometry_t geometry, float x, float y, float z, float rx, float ry) {
+void generate_player_geometry(legacy_geometry_t geometry, float x, float y, float z, float rx, float ry) {
 	float du, dv;
 
 	// Prepare the transforms and constants

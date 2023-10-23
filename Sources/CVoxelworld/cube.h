@@ -28,7 +28,7 @@ void make_sphere(float *data, float r, int detail);
 ///   - y: The y position of this block.
 ///   - z: The z position of this block.
 ///   - rotation: The Y rotation of the cross in degrees.
-void generate_cross_geometry(geometry_t geometry, int id, float ao, float light, float x, float y, float z, float rotation);
+void generate_cross_geometry(legacy_geometry_t geometry, int id, float ao, float light, float x, float y, float z, float rotation);
 
 //MARK: - Cube Geometry
 
@@ -45,7 +45,7 @@ void generate_cross_geometry(geometry_t geometry, int id, float ao, float light,
 ///   - x: The x position of the block.
 ///   - y: The y position of the block.
 ///   - z: The z position of the block.
-void generate_cube_geometry(geometry_t geometry, int id[6], float aos[6][4], float lights[6][4], int faces[6], float x, float y, float z);
+void generate_cube_geometry(legacy_geometry_t geometry, int id[6], float aos[6][4], float lights[6][4], int faces[6], float x, float y, float z);
 
 /// Generates the bottom geometry of a cube.
 ///
@@ -55,7 +55,7 @@ void generate_cube_geometry(geometry_t geometry, int id[6], float aos[6][4], flo
 ///   - geometry: The geometry to populate, must have space for 1 face.
 ///   - ao: The ambient occlusion of the face's vertices.
 ///   - light: The light level of the face's vertices.
-void generate_bottom_face(geometry_t geometry, float ao[4], float light[4]);
+void generate_bottom_face(legacy_geometry_t geometry, float ao[4], float light[4]);
 
 /// Generates the top geometry of a cube.
 ///
@@ -65,7 +65,7 @@ void generate_bottom_face(geometry_t geometry, float ao[4], float light[4]);
 ///   - geometry: The geometry to populate, must have space for 1 face.
 ///   - ao: The ambient occlusion of the face's vertices.
 ///   - light: The light level of the face's vertices.
-void generate_top_face(geometry_t geometry, float ao[4], float light[4]);
+void generate_top_face(legacy_geometry_t geometry, float ao[4], float light[4]);
 
 /// Generates the west geometry of a cube.
 ///
@@ -75,7 +75,7 @@ void generate_top_face(geometry_t geometry, float ao[4], float light[4]);
 ///   - geometry: The geometry to populate, must have space for 1 face.
 ///   - ao: The ambient occlusion of the face's vertices.
 ///   - light: The light level of the face's vertices.
-void generate_west_face(geometry_t geometry, float ao[4], float light[4]);
+void generate_west_face(legacy_geometry_t geometry, float ao[4], float light[4]);
 
 /// Generates the east geometry of a cube.
 ///
@@ -85,7 +85,7 @@ void generate_west_face(geometry_t geometry, float ao[4], float light[4]);
 ///   - geometry: The geometry to populate, must have space for 1 face.
 ///   - ao: The ambient occlusion of the face's vertices.
 ///   - light: The light level of the face's vertices.
-void generate_east_face(geometry_t geometry, float ao[4], float light[4]);
+void generate_east_face(legacy_geometry_t geometry, float ao[4], float light[4]);
 
 /// Generates the south geometry of a cube.
 ///
@@ -95,7 +95,7 @@ void generate_east_face(geometry_t geometry, float ao[4], float light[4]);
 ///   - geometry: The geometry to populate, must have space for 1 face.
 ///   - ao: The ambient occlusion of the face's vertices.
 ///   - light: The light level of the face's vertices.
-void generate_south_face(geometry_t geometry, float ao[4], float light[4]);
+void generate_south_face(legacy_geometry_t geometry, float ao[4], float light[4]);
 
 /// Generates the north geometry of a cube.
 ///
@@ -105,7 +105,7 @@ void generate_south_face(geometry_t geometry, float ao[4], float light[4]);
 ///   - geometry: The geometry to populate, must have space for 1 face.
 ///   - ao: The ambient occlusion of the face's vertices.
 ///   - light: The light level of the face's vertices.
-void generate_north_face(geometry_t geometry, float ao[4], float light[4]);
+void generate_north_face(legacy_geometry_t geometry, float ao[4], float light[4]);
 
 //MARK: - Player Geometry
 
@@ -117,4 +117,4 @@ void generate_north_face(geometry_t geometry, float ao[4], float light[4]);
 ///   - z: The z position of the player
 ///   - rx: The x rotation of the player
 ///   - ry: The y rotation of the player
-void generate_player_geometry(geometry_t geometry, float x, float y, float z, float rx, float ry);
+void generate_player_geometry(legacy_geometry_t geometry, float x, float y, float z, float rx, float ry);

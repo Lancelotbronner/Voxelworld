@@ -56,8 +56,8 @@ void text_upload(mesh_t mesh) {
 //MARK: - Primitives Management
 
 void text_triangle(unsigned int a, unsigned int b, unsigned int c) {
+	geometry_t geometry = text.geometry;
 	unsigned int tmp[] = { text.di + a, text.di + b, text.di + c };
-	text.di += 3;
 	geometry_index(text.geometry, tmp, 3 * sizeof(unsigned int));
 }
 
@@ -67,8 +67,9 @@ void text_uvs_offset(float du, float dv) {
 }
 
 void text_uvs(float u, float v) {
-	text.vertex.uv[0] = u;
-	text.vertex.uv[1] = v;
+	// multiply by the offset of a single char (32x64 px/char, 16x16 512px texture)
+	text.vertex.uv[0] = u / 16.0f;
+	text.vertex.uv[1] = v / 8.0f;
 }
 
 void text_size(float size) {
@@ -86,24 +87,23 @@ void text_position(float x, float y) {
 }
 
 void text_vertex() {
-	text.vertex.position[0] += text.dx;
-	text.vertex.position[1] += text.dy;
-	text.vertex.uv[0] += text.du;
-	text.vertex.uv[1] += text.dv;
-	geometry_vertex(text.geometry, &text.vertex, sizeof(struct text_vertex_s));
+	geometry_t geometry = text.geometry;
+	struct text_vertex_s *vertex = &text.vertex;
+	vertex->position[0] += text.dx;
+	vertex->position[1] += text.dy;
+	vertex->uv[0] += text.du;
+	vertex->uv[1] += text.dv;
+	text.di++;
+	geometry_vertex(text.geometry, vertex, sizeof(struct text_vertex_s));
 }
 
 //MARK: - Geometry Management
-
-static const float F = 0.0f;
-static const float T = 1.0f / 16.0f;
 
 void text_character(char character, float size, float x, float y) {
 	float u = character % 16 / 16.0f;
 	float v = character / 16 / 16.0f;
 	text_uvs_offset(u, v);
-//	text_position_offset(x, y);
-	text_position_offset(0, 0);
+	text_position_offset(x, y);
 	text_size(size);
 
 	// Triangles
@@ -115,60 +115,29 @@ void text_character(char character, float size, float x, float y) {
 
 	float s = text.size;
 
-	text_position(-s / 2, -s);
-	text_uvs(F, F);
+	text_position(0, 0);
+	text_uvs(0, 0);
 	text_vertex();
 
-	text_position(s / 2, -s);
-	text_uvs(T, F);
+	text_position(s, 0);
+	text_uvs(1, 0);
 	text_vertex();
 
-	text_position(s / 2, s);
-	text_uvs(T, T);
+	text_position(s, s);
+	text_uvs(1, 1);
 	text_vertex();
 
-	text_position(-s / 2, s);
-	text_uvs(F, T);
+	text_position(0, s);
+	text_uvs(0, 1);
 	text_vertex();
-
-	/*
-	 float *d = data;
-	 float s = 0.0625;
-	 float a = s;
-	 float b = s * 2;
-	 int w = c - 32;
-	 float du = (w % 16) * a;
-	 float dv = 1 - (w / 16) * b - b;
-
-	 //-n-m 0
-	 *(d++) = x - n; *(d++) = y - m;
-	 *(d++) = du + 0; *(d++) = dv;
-
-	 //+n-m 1
-	 *(d++) = x + n; *(d++) = y - m;
-	 *(d++) = du + a; *(d++) = dv;
-
-	 //+n+m 2
-	 *(d++) = x + n; *(d++) = y + m;
-	 *(d++) = du + a; *(d++) = dv + b;
-
-	 //-n-m 0
-	 *(d++) = x - n; *(d++) = y - m;
-	 *(d++) = du + 0; *(d++) = dv;
-
-	 // +n+m 2
-	 *(d++) = x + n; *(d++) = y + m;
-	 *(d++) = du + a; *(d++) = dv + b;
-
-	 // -n+m 3
-	 *(d++) = x - n; *(d++) = y + m;
-	 *(d++) = du + 0; *(d++) = dv + b;
-	 */
 }
 
 void text_string(char *characters, size_t length, float size, float x, float y) {
 	for (int i = 0; i < length; i++) {
-		text_character(characters[i], size, x, y);
-		x += size;
+		switch (characters[i]) {
+			case ' ': x += size;
+			case '\n': y += size;
+			default: text_character(characters[i], size, x, y);
+		}
 	}
 }

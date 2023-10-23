@@ -69,7 +69,7 @@ typedef struct {
     Map *light_maps[3][3];
     int miny;
     int maxy;
-	geometry_t geometry;
+	legacy_geometry_t geometry;
 } WorkerItem;
 
 typedef struct {
@@ -103,7 +103,7 @@ typedef struct {
     State state;
     State state1;
     State state2;
-    geometry_t geometry;
+    legacy_geometry_t geometry;
 	legacy_mesh_t mesh;
 } Player;
 
@@ -145,7 +145,7 @@ typedef struct {
 	legacy_mesh_t text_mesh;
     int item_index;
 	int last_item_index;
-	geometry_t item_geometry;
+	legacy_geometry_t item_geometry;
 	legacy_mesh_t item_mesh;
     int scale;
     int ortho;
@@ -999,7 +999,7 @@ void compute_chunk(WorkerItem *item) {
     } END_MAP_FOR_EACH;
 
     // generate geometry
-	geometry_t geometry = geometry_legacy_init(faces);
+	legacy_geometry_t geometry = geometry_legacy_init(faces);
     int offset = 0;
     MAP_FOR_EACH(map, ex, ey, ez, id) {
         if (id <= 0) {
@@ -1740,7 +1740,7 @@ void uniforms_item(Attrib *attrib) {
     glUniform1f(attrib->timer, time_of_day());
 }
 
-void generate_item_geometry(geometry_t geometry, int id) {
+void generate_item_geometry(legacy_geometry_t geometry, int id) {
 	id = items[id];
 	if (is_plant(id))
 		generate_cross_geometry(geometry, id, 0, 1, 0, 0, 0, 45);
@@ -2919,7 +2919,7 @@ int main(int argc, char **argv) {
                 char am_pm = hour < 12 ? 'a' : 'p';
                 hour = hour % 12;
                 hour = hour ? hour : 12;
-                snprintf(
+				size_t length = snprintf(
                     text_buffer, 1024,
                     "(%d, %d) (%.2f, %.2f, %.2f) [%d, %d, %d] %d%cm %dfps",
                     chunked(s->x), chunked(s->z), s->x, s->y, s->z,
@@ -2927,12 +2927,11 @@ int main(int argc, char **argv) {
                     face_count * 2, hour, am_pm, fps.fps);
 
 				// configure the text
-				size_t length = strlen(text_buffer);
 //				text_justify_left(text_buffer, length, ts, &tx, &ty);
 				
 				// build the geometry
 				text_clear();
-				text_string(text_buffer, length, ts, tx, ty);
+				text_string("Aa A", 4, ts, tx, ty);
 				text_upload(text_mesh);
 
 				// draw the mesh
@@ -2963,9 +2962,8 @@ int main(int argc, char **argv) {
                 }
             }
             if (g->typing) {
-                snprintf(text_buffer, 1024, "> %s", g->typing_buffer);
+				size_t length = snprintf(text_buffer, 1024, "> %s", g->typing_buffer);
 				// configure the text
-				size_t length = strlen(text_buffer);
 				text_justify_left(text_buffer, length, ts, &tx, &ty);
 
 				// build the geometry
