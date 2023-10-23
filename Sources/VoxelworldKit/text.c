@@ -113,7 +113,7 @@ void text_character(char character, float size, float x, float y) {
 
 	// Vertices
 
-	float s = text.size;
+	float s = size;
 
 	text_position(0, 0);
 	text_uvs(0, 0);
@@ -135,9 +135,15 @@ void text_character(char character, float size, float x, float y) {
 void text_string(char *characters, size_t length, float size, float x, float y) {
 	for (int i = 0; i < length; i++) {
 		switch (characters[i]) {
-			case ' ': x += size;
-			case '\n': y += size;
-			default: text_character(characters[i], size, x, y);
+			case ' ':
+				x += size;
+				continue;
+			case '\n':
+				y += size;
+				continue;
+			default:
+				text_character(characters[i], size, x, y);
+				x += size;
 		}
 	}
 }

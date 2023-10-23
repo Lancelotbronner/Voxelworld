@@ -2931,7 +2931,7 @@ int main(int argc, char **argv) {
 				
 				// build the geometry
 				text_clear();
-				text_string("Aa A", 4, ts, tx, ty);
+				text_string("A   B", 5, ts, tx, ty);
 				text_upload(text_mesh);
 
 				// draw the mesh
