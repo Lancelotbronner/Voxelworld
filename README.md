@@ -66,6 +66,7 @@ python server.py [HOST [PORT]]
 - Backquote (\`) to write text on any block (signs).
 - Arrow keys emulate mouse movement.
 - Enter emulates mouse click.
+- G to toggle wireframe
 
 ### Chat Commands
 

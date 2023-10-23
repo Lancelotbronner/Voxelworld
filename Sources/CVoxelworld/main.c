@@ -162,6 +162,7 @@ typedef struct {
     Block block1;
     Block copy0;
     Block copy1;
+	int polygon;
 } Model;
 
 static Model model;
@@ -2250,6 +2251,9 @@ void on_key(GLFWwindow *window, int key, int scancode, int action, int mods) {
         if (key == CRAFT_KEY_OBSERVE_INSET) {
             g->observe2 = (g->observe2 + 1) % g->player_count;
         }
+		if (key == 'G') {
+			g->polygon = g->polygon == GL_LINE ? GL_FILL : GL_LINE;
+		}
     }
 }
 
@@ -2351,7 +2355,7 @@ void create_window() {
         window_height = modes[mode_count - 1].height;
     }
     g->window = glfwCreateWindow(
-        window_width, window_height, "Craft", monitor, NULL);
+        window_width, window_height, "Voxelworld", monitor, NULL);
 }
 
 void handle_mouse_input() {
@@ -2802,9 +2806,11 @@ int main(int argc, char **argv) {
             s->y = highest_block(s->x, s->z) + 2;
         }
 
+#if DEBUG
 		GLint error;
 		while (error = glGetError(), error != GL_NO_ERROR)
 			fprintf(stderr, "[OpenGL] error %d\n", error);
+#endif
 		printf("[Voxelworld] Successfully loaded into %s mode\n", g->mode == MODE_ONLINE ? "online" : "offline");
 
         // BEGIN MAIN LOOP //
@@ -2855,6 +2861,7 @@ int main(int argc, char **argv) {
             }
 
             // PREPARE TO RENDER //
+			glPolygonMode(GL_FRONT_AND_BACK, g->polygon);
             g->observe1 = g->observe1 % g->player_count;
             g->observe2 = g->observe2 % g->player_count;
             delete_chunks();
@@ -2921,7 +2928,7 @@ int main(int argc, char **argv) {
 
 				// configure the text
 				size_t length = strlen(text_buffer);
-				text_justify_left(text_buffer, length, ts, &tx, &ty);
+//				text_justify_left(text_buffer, length, ts, &tx, &ty);
 				
 				// build the geometry
 				text_clear();
