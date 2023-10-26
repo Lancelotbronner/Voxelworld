@@ -20,11 +20,11 @@
 #define glDebugClear \
 	while (glGetError());
 
-#define glDebugCheck \
+#define glDebugCheck {\
 	int error = glGetError(); \
 	if (error) { \
-		printf("[OpenGL] %s failed with 0x%x", __func__, error); \
+		printf("[OpenGL] %s:%i failed with 0x%x", __func__, __LINE__, error); \
 		raise(SIGINT); \
-	}
+	}}
 
 #endif

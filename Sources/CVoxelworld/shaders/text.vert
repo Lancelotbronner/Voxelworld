@@ -1,14 +1,14 @@
 #version 410 core
 
-uniform mat4 matrix;
+uniform vec2 window;
 
-in vec4 position;
+in vec2 position;
 in vec2 uv;
 
 out vec2 fragment_uv;
 
 void main() {
-//    gl_Position = matrix * position;
-	gl_Position = position;
+	vec2 positionHS = position / window;
+	gl_Position = vec4(positionHS, 0, 1);
     fragment_uv = uv;
 }
