@@ -7,7 +7,7 @@ in vec2 fragment_uv;
 out vec4 color;
 
 void main() {
-    color = texture(sampler, fragment_uv);
+	color = vec4(1,0,0,1);// texture(sampler, fragment_uv);
 
 	if (is_sign && color == vec4(1.0))
 		discard;

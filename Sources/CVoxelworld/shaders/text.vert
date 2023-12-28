@@ -1,6 +1,6 @@
 #version 410 core
 
-uniform vec2 window;
+uniform mat4 projection;
 
 in vec2 position;
 in vec2 uv;
@@ -8,7 +8,6 @@ in vec2 uv;
 out vec2 fragment_uv;
 
 void main() {
-	vec2 positionHS = position / window;
-	gl_Position = vec4(positionHS, 0, 1);
+	gl_Position = projection * vec4(position, 0, 0);
     fragment_uv = uv;
 }
