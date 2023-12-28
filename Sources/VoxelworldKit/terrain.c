@@ -18,10 +18,10 @@
 void vertex_terrain() {
 	GLsizei stride = sizeof(GLfloat) * 10;
 	// position
-	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, 0);
 	// normal
-	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, sizeof(GLfloat) * 3);
 	// uv light ao
 	glEnableVertexAttribArray(2);

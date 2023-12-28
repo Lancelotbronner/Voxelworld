@@ -1758,7 +1758,9 @@ void generate_item_geometry(legacy_geometry_t geometry, int id) {
 
 void uniforms_text(Attrib *attrib) {
 	glUseProgram(attrib->program);
-	glUniform2f(attrib->matrix, g->width, g->height);
+	mat4 projection;
+	glm_ortho(0, g->width, 0, g->height, -1, 1, projection);
+	glUniformMatrix4fv(attrib->matrix, 1, false, (float*)projection);
 	glUniform1i(attrib->sampler, 1);
 	glUniform1i(attrib->extra1, 0);
 }
@@ -2718,7 +2720,7 @@ int main(int argc, char **argv) {
 	text_attrib.program = program;
 	text_attrib.position = glGetAttribLocation(program, "position");
 	text_attrib.uv = glGetAttribLocation(program, "uv");
-	text_attrib.matrix = glGetUniformLocation(program, "window");
+	text_attrib.matrix = glGetUniformLocation(program, "projection");
 	text_attrib.sampler = glGetUniformLocation(program, "sampler");
 	text_attrib.extra1 = glGetUniformLocation(program, "is_sign");
 
@@ -2931,7 +2933,6 @@ int main(int argc, char **argv) {
 				text_clear();
 				text_string("AB  E", 5, ts, tx, ty);
 				text_upload(text_mesh);
-				printf("W %i, H %i\n", g->width, g->height);
 
 				// draw the mesh
 				uniforms_text(&text_attrib);

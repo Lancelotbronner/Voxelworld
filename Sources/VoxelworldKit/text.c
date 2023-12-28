@@ -98,7 +98,7 @@ void text_vertex() {
 }
 
 //MARK: - Geometry Management
-#include <stdio.h>
+
 void text_character(char character, float size, float x, float y) {
 	character -= 0x20;
 	float u = character % 16 / 16.0f;
@@ -106,7 +106,6 @@ void text_character(char character, float size, float x, float y) {
 	text_uvs_offset(u, v);
 	text_position_offset(x, y);
 	text_size(size);
-	printf("X %f, Y %f, U %f, V %f\n", x, y, u * 16, v * 16);
 
 	// Triangles
 
@@ -135,7 +134,7 @@ void text_character(char character, float size, float x, float y) {
 }
 
 void text_string(char *characters, size_t length, float size, float x, float y) {
-	for (int i = 0; i < length; i++) {
+	for (int i = 0; i < length; i++)
 		switch (characters[i]) {
 			case ' ':
 				x += size;
@@ -147,5 +146,4 @@ void text_string(char *characters, size_t length, float size, float x, float y) 
 				text_character(characters[i], size, x, y);
 				x += size;
 		}
-	}
 }

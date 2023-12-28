@@ -26,8 +26,8 @@ void text_upload(mesh_t mesh);
 /// - Parameters:
 ///  - character: The character.
 ///  - size: The size of the text.
-///  - x: The X offset of the text.
-///  - y: The Y offset of the text.
+///  - x: The X offset of the text, in window coordinates.
+///  - y: The Y offset of the text, in window coordinates.
 void text_character(char character, float size, float x, float y);
 
 /// Generates the geometry of a string using the current font.
@@ -36,6 +36,6 @@ void text_character(char character, float size, float x, float y);
 ///   - characters: The characters of the string.
 ///   - length: The length of the string.
 ///   - size: The size of the text.
-///   - x: The X offset of the text.
-///   - y: The Y offset of the text.
+///   - x: The X offset of the text, in window coordinates.
+///   - y: The Y offset of the text, in window coordinates.
 void text_string(char *characters, size_t length, float size, float x, float y);
