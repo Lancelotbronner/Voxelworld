@@ -17,6 +17,7 @@
 
 void vertex_text() {
 	GLsizei stride = sizeof(GLfloat) * 4;
+
 	// position
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, 0);
