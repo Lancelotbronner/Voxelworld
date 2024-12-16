@@ -1,4 +1,4 @@
-// swift-tools-version: 5.8
+// swift-tools-version: 6.0
 import PackageDescription
 
 var package = Package(
@@ -10,13 +10,8 @@ var package = Package(
 		.package(url: "https://github.com/recp/cglm", branch: "master"),
 	],
 	targets: [
-
-//		.executableTarget(
-//			name: "Voxelworld"
-//		),
-
 		.executableTarget(
-			name: "CVoxelworld",
+			name: "Voxelworld",
 			dependencies: [
 				"glfw3",
 				"noise",

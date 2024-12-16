@@ -162,6 +162,7 @@ typedef struct {
     Block block1;
     Block copy0;
     Block copy1;
+	int polygon;
 } Model;
 
 static Model model;
@@ -1092,10 +1093,10 @@ void text_mesh_init(legacy_mesh_t *mesh) {
 	GLsizei stride = sizeof(GLfloat) * 10;
 	// position
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, 0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, 0);
 	// uv
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, sizeof(GLfloat) * 3);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, sizeof(GLfloat) * 2);
 	mesh_close();
 }
 
@@ -1575,7 +1576,6 @@ void builder_block(int x, int y, int z, int w) {
 }
 
 int render_chunks(Attrib *attrib, Player *player) {
-	glDebugClear
     int result = 0;
     State *s = &player->state;
     ensure_chunks(player);
@@ -1610,7 +1610,6 @@ int render_chunks(Attrib *attrib, Player *player) {
 		mesh_legacy_draw(&chunk->mesh);
         result += chunk->faces;
     }
-	glDebugCheck
     return result;
 }
 
@@ -1757,16 +1756,16 @@ void generate_item_geometry(legacy_geometry_t geometry, int id) {
 }
 
 void uniforms_text(Attrib *attrib) {
+	mat4 matrix;
+	set_matrix_2d(matrix, g->width, g->height);
 	glUseProgram(attrib->program);
-	mat4 projection;
-	glm_ortho(0, g->width, 0, g->height, -1, 1, projection);
-	glUniformMatrix4fv(attrib->matrix, 1, false, (float*)projection);
+	glUniformMatrix4fv(attrib->matrix, 1, GL_FALSE, (float*)matrix);
 	glUniform1i(attrib->sampler, 1);
 	glUniform1i(attrib->extra1, 0);
 }
 
 void text_justify_left(char *text, size_t length, float size, float *x, float *y) {
-	*x -= size * (length - 1) / 2;
+
 }
 
 void text_justify_right(char *text, size_t length, float size, float *x, float *y) {
@@ -1774,13 +1773,13 @@ void text_justify_right(char *text, size_t length, float size, float *x, float *
 }
 
 void text_justify_center(char *text, size_t length, float size, float *x, float *y) {
-
+	*x -= size * (length - 1) / 2;
 }
 
-void gui_draw(const mesh_t mesh) {
+void gui_draw(const legacy_mesh_t *mesh) {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	mesh_draw(mesh);
+	mesh_legacy_draw(mesh);
 	glDisable(GL_BLEND);
 }
 
@@ -2253,10 +2252,7 @@ void on_key(GLFWwindow *window, int key, int scancode, int action, int mods) {
             g->observe2 = (g->observe2 + 1) % g->player_count;
         }
 		if (key == 'G') {
-			int polygon;
-			glGetIntegerv(GL_POLYGON_MODE, &polygon);
-			polygon = polygon == GL_LINE ? GL_FILL : GL_LINE;
-			glPolygonMode(GL_FRONT_AND_BACK, polygon);
+			g->polygon = g->polygon == GL_LINE ? GL_FILL : GL_LINE;
 		}
     }
 }
@@ -2579,7 +2575,7 @@ void chdir_resources() {
 	CFRelease(bundleURL);
 
 	chdir(path);
-	chdir("Voxelworld_CVoxelworld.bundle");
+	chdir("Voxelworld_Voxelworld.bundle");
 	chdir("Contents/Resources");
 #endif
 }
@@ -2593,6 +2589,10 @@ void on_opengl_error(GLenum source, GLenum type, unsigned int id, GLenum severit
 	fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n", (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""), type, severity, message );
 }
 #endif
+
+static void frame() {
+
+}
 
 int main(int argc, char **argv) {
 	chdir_resources();
@@ -2678,8 +2678,6 @@ int main(int argc, char **argv) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     load_png_texture("textures/sign.png");
-	
-	glDebugCheck
 
     // LOAD SHADERS //
     Attrib block_attrib = {0};
@@ -2720,21 +2718,17 @@ int main(int argc, char **argv) {
 	text_attrib.program = program;
 	text_attrib.position = glGetAttribLocation(program, "position");
 	text_attrib.uv = glGetAttribLocation(program, "uv");
-	text_attrib.matrix = glGetUniformLocation(program, "projection");
+	text_attrib.matrix = glGetUniformLocation(program, "matrix");
 	text_attrib.sampler = glGetUniformLocation(program, "sampler");
 	text_attrib.extra1 = glGetUniformLocation(program, "is_sign");
-
-	glDebugCheck
 
     // CHECK COMMAND LINE ARGUMENTS //
     if (argc == 2 || argc == 3) {
         g->mode = MODE_ONLINE;
         strncpy(g->server_addr, argv[1], MAX_ADDR_LENGTH);
         g->server_port = argc == 3 ? atoi(argv[2]) : DEFAULT_PORT;
-        snprintf(g->db_path, MAX_PATH_LENGTH,
-            "cache.%s.%d.db", g->server_addr, g->server_port);
-    }
-    else {
+        snprintf(g->db_path, MAX_PATH_LENGTH, "cache.%s.%d.db", g->server_addr, g->server_port);
+    } else {
         g->mode = MODE_OFFLINE;
         snprintf(g->db_path, MAX_PATH_LENGTH, "%s", DB_PATH);
     }
@@ -2762,7 +2756,10 @@ int main(int argc, char **argv) {
 
 	text_mesh_init(&g->text_mesh);
 
-	glDebugCheck
+	GLint error;
+	while (error = glGetError(), error != GL_NO_ERROR)
+		fprintf(stderr, "[OpenGL] error 0x%x\n", error);
+
 	printf("[Voxelworld] Initialized successfully\n");
 
     // OUTER LOOP //
@@ -2811,7 +2808,11 @@ int main(int argc, char **argv) {
             s->y = highest_block(s->x, s->z) + 2;
         }
 
-		glDebugCheck
+#if DEBUG
+		GLint error;
+		while (error = glGetError(), error != GL_NO_ERROR)
+			fprintf(stderr, "[OpenGL] error %d\n", error);
+#endif
 		printf("[Voxelworld] Successfully loaded into %s mode\n", g->mode == MODE_ONLINE ? "online" : "offline");
 
         // BEGIN MAIN LOOP //
@@ -2862,6 +2863,7 @@ int main(int argc, char **argv) {
             }
 
             // PREPARE TO RENDER //
+			glPolygonMode(GL_FRONT_AND_BACK, g->polygon);
             g->observe1 = g->observe1 % g->player_count;
             g->observe2 = g->observe2 % g->player_count;
             delete_chunks();
@@ -2872,7 +2874,8 @@ int main(int argc, char **argv) {
             Player *player = g->players + g->observe1;
 
             // RENDER 3-D SCENE //
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_DEPTH_BUFFER_BIT);
 			//TODO: Fix the sky's ungodly horrors
 //            render_sky(&sky_attrib, player, sky_buffer);
             glClear(GL_DEPTH_BUFFER_BIT);
@@ -2881,7 +2884,8 @@ int main(int argc, char **argv) {
 //            render_signs(&text_attrib, player);
 //            render_sign(&text_attrib, player);
             render_players(&block_attrib, player);
-			glDebugCheck
+            if (SHOW_WIREFRAME)
+                render_wireframe(&line_attrib, player);
 
             // RENDER HUD //
             glClear(GL_DEPTH_BUFFER_BIT);
@@ -2899,13 +2903,14 @@ int main(int argc, char **argv) {
 				mesh_legacy_draw(&g->item_mesh);
             }
 
-			glDebugCheck
-
             // RENDER TEXT //
             char text_buffer[1024];
-            float ts = 12 * g->scale;
-            float tx = ts / 2;
+            float ts = 24 * g->scale;
+            float tx = 0;
             float ty = g->height - ts;
+
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 			// prepare the mesh
 			mesh_t text_mesh = alloca(mesh_sizeof());
@@ -2927,16 +2932,16 @@ int main(int argc, char **argv) {
                     face_count * 2, hour, am_pm, fps.fps);
 
 				// configure the text
-//				text_justify_left(text_buffer, length, ts, &tx, &ty);
+				text_justify_left(text_buffer, length, ts, &tx, &ty);
 				
 				// build the geometry
 				text_clear();
-				text_string("AB  E", 5, ts, tx, ty);
+				text_string(text_buffer, length, ts, tx, ty);
 				text_upload(text_mesh);
 
 				// draw the mesh
 				uniforms_text(&text_attrib);
-				gui_draw(text_mesh);
+				mesh_draw(text_mesh);
 
                 ty -= ts * 2;
             }
@@ -3005,6 +3010,8 @@ int main(int argc, char **argv) {
 					mesh_draw(text_mesh);
                 }
             }
+
+			glDisable(GL_BLEND);
 
             // RENDER PICTURE IN PICTURE //
             if (g->observe2) {

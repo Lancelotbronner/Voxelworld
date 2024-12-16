@@ -17,6 +17,7 @@
 
 void vertex_text() {
 	GLsizei stride = sizeof(GLfloat) * 4;
+
 	// position
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, stride, 0);
@@ -67,7 +68,7 @@ void text_uvs_offset(float du, float dv) {
 }
 
 void text_uvs(float u, float v) {
-	// multiply by the offset of a single char (32x64 px/char, 16x16 512px texture)
+	// multiply by the offset of a single char (32x64 px/char, 16x8 512px texture)
 	text.vertex.uv[0] = u / 16.0f;
 	text.vertex.uv[1] = v / 8.0f;
 }
@@ -99,51 +100,53 @@ void text_vertex() {
 
 //MARK: - Geometry Management
 
-void text_character(char character, float size, float x, float y) {
+float text_character(char character, float size, float x, float y) {
 	character -= 0x20;
+	// 32x64 px/char, 16x8 512px texture
 	float u = character % 16 / 16.0f;
-	float v = character / 16 / 16.0f;
+	// TODO: what is this abomination
+	float v = 1 - character / 16 / 8.0f - (1/8.f);
 	text_uvs_offset(u, v);
 	text_position_offset(x, y);
 	text_size(size);
 
 	// Triangles
 
-	text_triangle(0, 1, 3);
-	text_triangle(1, 2, 3);
+	text_triangle(0, 1, 2);
+	text_triangle(0, 2, 3);
 
 	// Vertices
 
-	float s = size;
+	float s = text.size;
+	float hs = s / 2;
 
 	text_position(0, 0);
 	text_uvs(0, 0);
 	text_vertex();
 
-	text_position(s, 0);
+	text_position(hs, 0);
 	text_uvs(1, 0);
 	text_vertex();
 
-	text_position(s, s);
+	text_position(hs, s);
 	text_uvs(1, 1);
 	text_vertex();
 
 	text_position(0, s);
 	text_uvs(0, 1);
 	text_vertex();
+
+	return hs;
 }
 
 void text_string(char *characters, size_t length, float size, float x, float y) {
 	for (int i = 0; i < length; i++)
 		switch (characters[i]) {
-			case ' ':
-				x += size;
-				continue;
-			case '\n':
-				y += size;
-				continue;
-			default:
-				text_character(characters[i], size, x, y);
-				x += size;
+		case '\n':
+			y += size;
+			break;
+		default:
+			x += text_character(characters[i], size, x, y);
+			break;
 		}
 }
