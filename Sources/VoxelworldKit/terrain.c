@@ -134,7 +134,7 @@ static inline void calculate_uvs(int w) {
 	terrain_uvs_offset(du, dv);
 }
 
-void terrain_bottom(float ao[4], float light[4]) {
+void terrain_bottom(const float ao[4], const float light[4]) {
 	// Configure the geometry for the face
 	terrain_normals(0, -1, 0);
 
@@ -170,7 +170,7 @@ void terrain_bottom(float ao[4], float light[4]) {
 	terrain_vertex();
 }
 
-void terrain_top(float ao[4], float light[4]) {
+void terrain_top(const float ao[4], const float light[4]) {
 	// Configure the geometry for the face
 	terrain_normals(0, +1, 0);
 
@@ -206,7 +206,7 @@ void terrain_top(float ao[4], float light[4]) {
 	terrain_vertex();
 }
 
-void terrain_west(float ao[4], float light[4]) {
+void terrain_west(const float ao[4], const float light[4]) {
 	// Configure the geometry for the face
 	terrain_normals(-1, 0, 0);
 
@@ -242,7 +242,7 @@ void terrain_west(float ao[4], float light[4]) {
 	terrain_vertex();
 }
 
-void terrain_east(float ao[4], float light[4]) {
+void terrain_east(const float ao[4], const float light[4]) {
 	// Configure the geometry for the face
 	terrain_normals(+1, 0, 0);
 
@@ -278,7 +278,7 @@ void terrain_east(float ao[4], float light[4]) {
 	terrain_vertex();
 }
 
-void terrain_south(float ao[4], float light[4]) {
+void terrain_south(const float ao[4], const float light[4]) {
 	// Configure the geometry for the face
 	terrain_normals(0, 0, +1);
 
@@ -314,7 +314,7 @@ void terrain_south(float ao[4], float light[4]) {
 	terrain_vertex();
 }
 
-void terrain_north(float ao[4], float light[4]) {
+void terrain_north(const float ao[4], const float light[4]) {
 	// Configure the geometry for the face
 	terrain_normals(0, 0, -1);
 
@@ -456,7 +456,7 @@ void terrain_cross(int texture, float ao, float light, float x, float y, float z
 	terrain_position_identity();
 }
 
-void terrain_cube(int textures[6], float ao[6][4], float light[6][4], unsigned char faces, float x, float y, float z) {
+void terrain_cube(const int textures[6], const float ao[6][4], const float light[6][4], unsigned char faces, float x, float y, float z) {
 	// Configure the geometry for the block
 	terrain_position_offset(x, y, z);
 

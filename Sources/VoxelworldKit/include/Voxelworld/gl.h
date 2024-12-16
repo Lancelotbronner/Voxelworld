@@ -23,7 +23,7 @@
 #define glDebugCheck {\
 	int error = glGetError(); \
 	if (error) { \
-		printf("[OpenGL] %s:%i failed with 0x%x", __func__, __LINE__, error); \
+		printf("[OpenGL] %s:%i failed with 0x%x\n", __func__, __LINE__, error); \
 		raise(SIGINT); \
 	}}
 

@@ -44,5 +44,5 @@ void terrain_cross(int texture, float ao, float light, float x, float y, float z
 ///   - x: The x position of the block.
 ///   - y: The y position of the block.
 ///   - z: The z position of the block.
-void terrain_cube(int textures[6], float aos[6][4], float lights[6][4], unsigned char faces, float x, float y, float z);
+void terrain_cube(const int textures[6], const float aos[6][4], const float lights[6][4], unsigned char faces, float x, float y, float z);
 

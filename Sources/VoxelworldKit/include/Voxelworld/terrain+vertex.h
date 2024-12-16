@@ -97,7 +97,7 @@ void terrain_vertex();
 /// - Parameters:
 ///   - ao: The ambient occlusion of the face's vertices.
 ///   - light: The light level of the face's vertices.
-void terrain_bottom(float ao[4], float light[4]);
+void terrain_bottom(const float ao[4], const float light[4]);
 
 /// Generates the top geometry of a cube.
 ///
@@ -106,7 +106,7 @@ void terrain_bottom(float ao[4], float light[4]);
 /// - Parameters:
 ///   - ao: The ambient occlusion of the face's vertices.
 ///   - light: The light level of the face's vertices.
-void terrain_top(float ao[4], float light[4]);
+void terrain_top(const float ao[4], const float light[4]);
 
 /// Generates the west geometry of a cube.
 ///
@@ -115,7 +115,7 @@ void terrain_top(float ao[4], float light[4]);
 /// - Parameters:
 ///   - ao: The ambient occlusion of the face's vertices.
 ///   - light: The light level of the face's vertices.
-void terrain_west(float ao[4], float light[4]);
+void terrain_west(const float ao[4], const float light[4]);
 
 /// Generates the east geometry of a cube.
 ///
@@ -124,7 +124,7 @@ void terrain_west(float ao[4], float light[4]);
 /// - Parameters:
 ///   - ao: The ambient occlusion of the face's vertices.
 ///   - light: The light level of the face's vertices.
-void terrain_east(float ao[4], float light[4]);
+void terrain_east(const float ao[4], const float light[4]);
 
 /// Generates the south geometry of a cube.
 ///
@@ -133,7 +133,7 @@ void terrain_east(float ao[4], float light[4]);
 /// - Parameters:
 ///   - ao: The ambient occlusion of the face's vertices.
 ///   - light: The light level of the face's vertices.
-void terrain_south(float ao[4], float light[4]);
+void terrain_south(const float ao[4], const float light[4]);
 
 /// Generates the north geometry of a cube.
 ///
@@ -142,4 +142,4 @@ void terrain_south(float ao[4], float light[4]);
 /// - Parameters:
 ///   - ao: The ambient occlusion of the face's vertices.
 ///   - light: The light level of the face's vertices.
-void terrain_north(float ao[4], float light[4]);
+void terrain_north(const float ao[4], const float light[4]);

@@ -142,7 +142,6 @@ typedef struct {
     int observe1;
     int observe2;
     int flying;
-	legacy_mesh_t text_mesh;
     int item_index;
 	int last_item_index;
 	legacy_geometry_t item_geometry;
@@ -165,7 +164,9 @@ typedef struct {
 	int polygon;
 } Model;
 
-static Model model;
+static Model model = (Model){
+	.polygon = GL_FILL,
+};
 static Model *g = &model;
 
 int chunked(float x) {
@@ -1755,6 +1756,21 @@ void generate_item_geometry(legacy_geometry_t geometry, int id) {
 	}
 }
 
+static void terrain_item(int id) {
+	terrain_clear();
+	id = items[id];
+
+	if (is_plant(id)) {
+		terrain_cross(plants[id], 0, 1, 0, 0, 0, 45);
+		return;
+	}
+
+	static float ao[6][4] = {};
+	static float lights[6][4] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+	static int faces[6] = { 1, 1, 1, 1, 1, 1 };
+	terrain_cube(blocks[id], ao, lights, faces, 0, 0, 0);
+}
+
 void uniforms_text(Attrib *attrib) {
 	mat4 matrix;
 	set_matrix_2d(matrix, g->width, g->height);
@@ -2590,10 +2606,6 @@ void on_opengl_error(GLenum source, GLenum type, unsigned int id, GLenum severit
 }
 #endif
 
-static void frame() {
-
-}
-
 int main(int argc, char **argv) {
 	chdir_resources();
 
@@ -2754,7 +2766,18 @@ int main(int argc, char **argv) {
 	vertex_mesh_init(&g->item_mesh);
 	g->last_item_index = -1;
 
-	text_mesh_init(&g->text_mesh);
+	mesh_t item_mesh = alloca(mesh_sizeof());
+	mesh_init(item_mesh, GL_TRIANGLES, GL_DYNAMIC_DRAW);
+	mesh_bind(item_mesh);
+	vertex_terrain();
+	mesh_unbind();
+
+	//TODO: having the mesh here rather than in the loop triggers an 0x502 (Invalid Operation) OpenGL error
+	mesh_t text_mesh = alloca(mesh_sizeof());
+	mesh_init(text_mesh, GL_TRIANGLES, GL_DYNAMIC_DRAW);
+	mesh_bind(text_mesh);
+	vertex_text();
+	mesh_unbind();
 
 	GLint error;
 	while (error = glGetError(), error != GL_NO_ERROR)
@@ -2897,10 +2920,14 @@ int main(int argc, char **argv) {
 				if (g->item_index != g->last_item_index) {
 					generate_item_geometry(g->item_geometry, g->item_index);
 					geometry_upload_to(g->item_geometry, &g->item_mesh);
+
+					terrain_item(g->item_index);
+					terrain_upload(item_mesh);
 					g->last_item_index = g->item_index;
 				}
 				uniforms_item(&block_attrib);
-				mesh_legacy_draw(&g->item_mesh);
+//				mesh_draw(item_mesh);
+//				mesh_legacy_draw(&g->item_mesh);
             }
 
             // RENDER TEXT //
@@ -2911,13 +2938,6 @@ int main(int argc, char **argv) {
 
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-			// prepare the mesh
-			mesh_t text_mesh = alloca(mesh_sizeof());
-			mesh_init(text_mesh, GL_TRIANGLES, GL_DYNAMIC_DRAW);
-			mesh_bind(text_mesh);
-			vertex_text();
-			mesh_unbind();
 
             if (SHOW_INFO_TEXT) {
                 int hour = time_of_day() * 24;
@@ -2967,13 +2987,10 @@ int main(int argc, char **argv) {
                 }
             }
             if (g->typing) {
-				size_t length = snprintf(text_buffer, 1024, "> %s", g->typing_buffer);
-				// configure the text
-				text_justify_left(text_buffer, length, ts, &tx, &ty);
-
 				// build the geometry
 				text_clear();
-				text_string(text_buffer, length, ts, tx, ty);
+				text_string("> ", 2, ts, tx, ty);
+				text_string(g->typing_buffer, strlen(g->typing_buffer), ts, tx, ty);
 				text_upload(text_mesh);
 
 				// draw the mesh
