@@ -13,13 +13,11 @@
 
 size_t mesh_sizeof();
 
-void mesh_init(mesh_t mesh, int32_t primitive, int32_t usage);
+void mesh_init(mesh_t mesh, int32_t usage);
 
 /// Uninitializes the mesh without deallocating it, allowing it to be reused.
 /// - Parameter mesh: The mesh to prepare for reuse.
 void mesh_deinit(mesh_t mesh);
-
-void mesh_destroy(mesh_t mesh);
 
 //MARK: - Binding Management
 
@@ -42,4 +40,4 @@ void mesh_update(mesh_t mesh, geometry_t geometry, int32_t primitive);
 
 //MARK: - Drawing Management
 
-void mesh_draw(mesh_t mesh);
+void mesh_draw(const mesh_t mesh);

@@ -332,10 +332,10 @@ void draw_triangles_2d(Attrib *attrib, GLuint buffer, int count) {
 }
 
 void draw_lines(Attrib *attrib, GLuint buffer, int components, int count) {
+	glBindVertexArray(1);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
     glEnableVertexAttribArray(attrib->position);
-    glVertexAttribPointer(
-        attrib->position, components, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(attrib->position, components, GL_FLOAT, GL_FALSE, 0, 0);
     glDrawArrays(GL_LINES, 0, count);
     glDisableVertexAttribArray(attrib->position);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1706,16 +1706,16 @@ void render_wireframe(Attrib *attrib, Player *player) {
         s->x, s->y, s->z, s->rx, s->ry, g->fov, g->ortho, g->render_radius);
     int hx, hy, hz;
     int hw = hit_test(0, s->x, s->y, s->z, s->rx, s->ry, &hx, &hy, &hz);
-    if (is_obstacle(hw)) {
-        glUseProgram(attrib->program);
-        glLineWidth(1);
-        glEnable(GL_COLOR_LOGIC_OP);
-        glUniformMatrix4fv(attrib->matrix, 1, GL_FALSE, (float*)matrix);
-        GLuint wireframe_buffer = gen_wireframe_buffer(hx, hy, hz, 0.53);
-        draw_lines(attrib, wireframe_buffer, 3, 24);
-        del_buffer(wireframe_buffer);
-        glDisable(GL_COLOR_LOGIC_OP);
-    }
+    if (!is_obstacle(hw))
+		return;
+	glUseProgram(attrib->program);
+	glLineWidth(1);
+	glEnable(GL_COLOR_LOGIC_OP);
+	glUniformMatrix4fv(attrib->matrix, 1, GL_FALSE, (float*)matrix);
+	GLuint wireframe_buffer = gen_wireframe_buffer(hx, hy, hz, 0.53);
+	draw_lines(attrib, wireframe_buffer, 3, 24);
+	del_buffer(wireframe_buffer);
+	glDisable(GL_COLOR_LOGIC_OP);
 }
 
 void render_crosshairs(Attrib *attrib) {
@@ -1765,10 +1765,9 @@ static void terrain_item(int id) {
 		return;
 	}
 
-	static float ao[6][4] = {};
-	static float lights[6][4] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
-	static int faces[6] = { 1, 1, 1, 1, 1, 1 };
-	terrain_cube(blocks[id], ao, lights, faces, 0, 0, 0);
+	static const float ao[6][4] = {};
+	static const float lights[6][4] = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1};
+	terrain_cube(blocks[id], ao, lights, 0xFF, 0, 0, 0);
 }
 
 void uniforms_text(Attrib *attrib) {
@@ -2767,14 +2766,13 @@ int main(int argc, char **argv) {
 	g->last_item_index = -1;
 
 	mesh_t item_mesh = alloca(mesh_sizeof());
-	mesh_init(item_mesh, GL_TRIANGLES, GL_DYNAMIC_DRAW);
+	mesh_init(item_mesh, GL_STATIC_DRAW);
 	mesh_bind(item_mesh);
 	vertex_terrain();
 	mesh_unbind();
 
-	//TODO: having the mesh here rather than in the loop triggers an 0x502 (Invalid Operation) OpenGL error
 	mesh_t text_mesh = alloca(mesh_sizeof());
-	mesh_init(text_mesh, GL_TRIANGLES, GL_DYNAMIC_DRAW);
+	mesh_init(text_mesh, GL_DYNAMIC_DRAW);
 	mesh_bind(text_mesh);
 	vertex_text();
 	mesh_unbind();
@@ -2903,10 +2901,12 @@ int main(int argc, char **argv) {
 //            render_sky(&sky_attrib, player, sky_buffer);
             glClear(GL_DEPTH_BUFFER_BIT);
             int face_count = render_chunks(&block_attrib, player);
+
 			//TODO: Fix the sign's 0x501 error
 //            render_signs(&text_attrib, player);
 //            render_sign(&text_attrib, player);
             render_players(&block_attrib, player);
+
             if (SHOW_WIREFRAME)
                 render_wireframe(&line_attrib, player);
 
@@ -2926,11 +2926,12 @@ int main(int argc, char **argv) {
 					g->last_item_index = g->item_index;
 				}
 				uniforms_item(&block_attrib);
-//				mesh_draw(item_mesh);
+				mesh_draw(item_mesh);
 //				mesh_legacy_draw(&g->item_mesh);
             }
 
-            // RENDER TEXT //
+			// RENDER TEXT //
+
             char text_buffer[1024];
             float ts = 24 * g->scale;
             float tx = 0;
@@ -3074,8 +3075,6 @@ int main(int argc, char **argv) {
                 }
             }
 
-			mesh_deinit(text_mesh);
-
 #if DEBUG
 			GLint error;
 			while (error = glGetError(), error != GL_NO_ERROR)
@@ -3097,6 +3096,10 @@ int main(int argc, char **argv) {
         }
 
         // SHUTDOWN //
+
+		mesh_deinit(text_mesh);
+		mesh_deinit(item_mesh);
+
         db_save_state(s->x, s->y, s->z, s->rx, s->ry);
         db_close();
         db_disable();

@@ -1,6 +1,6 @@
 //
 //  mesh.c
-//  
+//  Voxelworld
 //
 //  Created by Christophe Bronner on 2023-06-27.
 //
@@ -36,38 +36,40 @@ size_t mesh_sizeof() {
 	return sizeof(struct mesh_s);
 }
 
-void mesh_init(mesh_t mesh, int32_t primitive, int32_t usage) {
+void mesh_init(mesh_t mesh, int32_t usage) {
 	assert(mesh);
+	*mesh = (struct mesh_s) {
+		.usage = usage,
+	};
+
 	glGenVertexArrays(1, &mesh->vao);
+	glBindVertexArray(mesh->vao);
+
 	glGenBuffers(2, &mesh->vbo);
-	mesh->count = 0;
-	mesh->index = 0;
-	mesh->usage = usage;
-	mesh->primitive = primitive;
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ebo);
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void mesh_deinit(mesh_t mesh) {
 	glDeleteVertexArrays(1, &mesh->vao);
 	glDeleteBuffers(2, &mesh->vbo);
-}
-
-void mesh_destroy(mesh_t mesh) {
-	mesh_deinit(mesh);
-	free(mesh);
+	*mesh = (struct mesh_s) {
+		.usage = mesh->usage,
+	};
 }
 
 //MARK: - Binding Management
 
 void mesh_bind(mesh_t mesh) {
 	glBindVertexArray(mesh->vao);
-	glBindBuffer(GL_ARRAY_BUFFER, mesh->vbo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->ebo);
 }
 
 void mesh_unbind() {
 	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 //MARK: - Content Management
@@ -101,12 +103,12 @@ void mesh_indices32(mesh_t mesh, unsigned int *indices, size_t count) {
 
 //MARK: - Drawing Management
 
-void mesh_draw(mesh_t mesh) {
-	glDebugClear;
+void mesh_draw(const mesh_t mesh) {
+	assert(mesh && mesh->vao);
 	glBindVertexArray(mesh->vao);
 	glDrawElements(mesh->primitive, mesh->count, mesh->index, 0);
+	glDebugCheck
 	glBindVertexArray(0);
-	glDebugCheck;
 }
 
 //MARK: - Geometry Integration
@@ -123,6 +125,6 @@ void mesh_update(mesh_t mesh, geometry_t geometry, int32_t primitive) {
 	// Update the primitive configuration
 	mesh->count = (GLsizei)geometry_index_count(geometry);
 	mesh->primitive = primitive;
-	GLenum index[] = { 0, GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT, 0, GL_UNSIGNED_INT };
+	static const GLenum index[] = { 0, GL_UNSIGNED_BYTE, GL_UNSIGNED_SHORT, 0, GL_UNSIGNED_INT };
 	mesh->index = index[geometry_index_size(geometry)];
 }
