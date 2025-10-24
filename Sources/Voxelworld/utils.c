@@ -172,7 +172,7 @@ char *tokenize(char *str, const char *delim, char **key) {
     return result;
 }
 
-int char_width(char input) {
+int char_width(int input) {
     static const int lookup[128] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

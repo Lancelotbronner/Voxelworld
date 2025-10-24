@@ -62,7 +62,7 @@ void terrain_upload(mesh_t mesh) {
 //MARK: - Primitives Management
 
 void terrain_triangle(unsigned int a, unsigned int b, unsigned int c) {
-	unsigned int tmp[] = { a, b, c };
+	unsigned int tmp[] = { terrain.di + a, terrain.di + b, terrain.di + c };
 	geometry_index(terrain.geometry, tmp, 3 * sizeof(unsigned int));
 }
 

@@ -16,8 +16,8 @@ void mat_apply(float *data, mat4 matrix, int count, int offset, int stride) {
 }
 
 void frustum_planes(vec4 planes[6], int radius, mat4 matrix) {
-    float znear = 0.125;
-    float zfar = radius * 32 + 64;
+//    float znear = 0.125;
+//    float zfar = radius * 32 + 64;
 	glm_frustum_planes(matrix, planes);
 	glm_vec4_scale(planes[4], 0.125, planes[4]);
 	glm_vec4_scale(planes[5], radius * 32 + 64, planes[5]);

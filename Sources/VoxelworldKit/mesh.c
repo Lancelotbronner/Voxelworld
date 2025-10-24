@@ -107,7 +107,7 @@ void mesh_draw(const mesh_t mesh) {
 	assert(mesh && mesh->vao);
 	glBindVertexArray(mesh->vao);
 	glDrawElements(mesh->primitive, mesh->count, mesh->index, 0);
-	glDebugCheck
+//	glDebugCheck
 	glBindVertexArray(0);
 }
 

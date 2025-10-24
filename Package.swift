@@ -28,6 +28,7 @@ var package = Package(
 			cSettings: [
 				.define("GLFW_INCLUDE_GLCOREARB"),
 				.define("GL_SILENCE_DEPRECATION"),
+				.unsafeFlags(["-Wall"]),
 			],
 			linkerSettings: [
 				.linkedFramework("Cocoa"),
@@ -42,6 +43,7 @@ var package = Package(
 			],
 			cSettings: [
 				.define("GL_SILENCE_DEPRECATION"),
+				.unsafeFlags(["-Wall"]),
 			]
 		),
 
